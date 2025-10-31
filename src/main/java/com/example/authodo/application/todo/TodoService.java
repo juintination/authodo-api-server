@@ -44,10 +44,10 @@ public class TodoService implements
 
     @Override
     @Transactional
-    public Todo update(Long id, String title, String content, TodoStatus status) {
+    public void update(Long id, String title, String content, TodoStatus status) {
         Todo existing = get(id);
         Todo updated = existing.change(title, content, status);
-        return todoRepositoryPort.save(updated);
+        todoRepositoryPort.save(updated);
     }
 
     @Override

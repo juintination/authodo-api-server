@@ -6,6 +6,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
 
+import java.time.LocalDateTime;
+
 public class TodoDtos {
 
     public record CreateRequestDTO(
@@ -32,8 +34,8 @@ public class TodoDtos {
             String content,
             TodoStatus status,
             boolean completed,
-            String createdAt,
-            String modifiedAt
+            LocalDateTime createdAt,
+            LocalDateTime modifiedAt
     ) {
         public static ResponseDTO from(Todo todo) {
             return ResponseDTO.builder()
@@ -42,8 +44,8 @@ public class TodoDtos {
                     .content(todo.getContent())
                     .status(todo.getStatus())
                     .completed(todo.isCompleted())
-                    .createdAt(null)
-                    .modifiedAt(null)
+                    .createdAt(todo.getCreatedAt())
+                    .modifiedAt(todo.getModifiedAt())
                     .build();
         }
     }

@@ -104,8 +104,8 @@ class TodoControllerTest {
                                 fieldWithPath("data.content").type(JsonFieldType.STRING).optional().description("내용"),
                                 fieldWithPath("data.status").type(JsonFieldType.STRING).description("상태(PENDING/IN_PROGRESS/COMPLETED)"),
                                 fieldWithPath("data.completed").type(JsonFieldType.BOOLEAN).description("완료 여부"),
-                                fieldWithPath("data.createdAt").type(JsonFieldType.NULL).optional().description("생성시각(null)"),
-                                fieldWithPath("data.modifiedAt").type(JsonFieldType.NULL).optional().description("수정시각(null)"),
+                                fieldWithPath("data.createdAt").type(JsonFieldType.NULL).optional().description("생성시각"),
+                                fieldWithPath("data.modifiedAt").type(JsonFieldType.NULL).optional().description("수정시각"),
                                 fieldWithPath("message").type(JsonFieldType.STRING).description("결과 메시지")
                         )
                 ));
@@ -152,8 +152,8 @@ class TodoControllerTest {
                                 fieldWithPath("data[].content").type(JsonFieldType.STRING).optional().description("내용"),
                                 fieldWithPath("data[].status").type(JsonFieldType.STRING).description("상태"),
                                 fieldWithPath("data[].completed").type(JsonFieldType.BOOLEAN).description("완료 여부"),
-                                fieldWithPath("data[].createdAt").type(JsonFieldType.NULL).optional().description("생성시각(null)"),
-                                fieldWithPath("data[].modifiedAt").type(JsonFieldType.NULL).optional().description("수정시각(null)"),
+                                fieldWithPath("data[].createdAt").type(JsonFieldType.NULL).optional().description("생성시각"),
+                                fieldWithPath("data[].modifiedAt").type(JsonFieldType.NULL).optional().description("수정시각"),
                                 fieldWithPath("message").type(JsonFieldType.STRING).description("결과 메시지")
                         )
                 ));
@@ -162,11 +162,13 @@ class TodoControllerTest {
     @Test
     @DisplayName("PUT /api/todos/{id} - 수정 성공")
     void update_success() throws Exception {
-        TodoDtos.UpdateRequestDTO req = new TodoDtos.UpdateRequestDTO("수정된 제목", "수정된 내용", TodoStatus.COMPLETED);
-        Todo before = todo(1L, "제목", "내용", TodoStatus.PENDING);
-        Todo after  = before.change(req.title(), req.content(), req.status()).toBuilder().id(1L).build();
+        TodoDtos.UpdateRequestDTO req =
+                new TodoDtos.UpdateRequestDTO("수정된 제목", "수정된 내용", TodoStatus.COMPLETED);
 
-        given(todoService.update(1L, req.title(), req.content(), req.status())).willReturn(after);
+        doNothing().when(todoService).update(1L, req.title(), req.content(), req.status());
+
+        Todo after = todo(1L, req.title(), req.content(), TodoStatus.COMPLETED);
+        given(todoService.get(1L)).willReturn(after);
 
         mockMvc.perform(RestDocumentationRequestBuilders.put("/api/todos/{id}", 1L)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -187,11 +189,14 @@ class TodoControllerTest {
                                 fieldWithPath("data.content").type(JsonFieldType.STRING).optional().description("내용"),
                                 fieldWithPath("data.status").type(JsonFieldType.STRING).description("상태"),
                                 fieldWithPath("data.completed").type(JsonFieldType.BOOLEAN).description("완료 여부"),
-                                fieldWithPath("data.createdAt").type(JsonFieldType.NULL).optional().description("생성시각(null)"),
-                                fieldWithPath("data.modifiedAt").type(JsonFieldType.NULL).optional().description("수정시각(null)"),
+                                fieldWithPath("data.createdAt").type(JsonFieldType.NULL).optional().description("생성시각"),
+                                fieldWithPath("data.modifiedAt").type(JsonFieldType.NULL).optional().description("수정시각"),
                                 fieldWithPath("message").type(JsonFieldType.STRING).description("결과 메시지")
                         )
                 ));
+
+        verify(todoService).update(1L, req.title(), req.content(), req.status());
+        verify(todoService).get(1L);
     }
 
     @Test

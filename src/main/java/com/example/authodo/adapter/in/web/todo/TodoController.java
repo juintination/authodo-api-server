@@ -43,7 +43,8 @@ public class TodoController {
     @PutMapping("/{id}")
     public ApiResponse<ResponseDTO> update(@PathVariable Long id,
                                            @Valid @RequestBody TodoDtos.UpdateRequestDTO req) {
-        Todo updated = todoService.update(id, req.title(), req.content(), req.status());
+        todoService.update(id, req.title(), req.content(), req.status());
+        Todo updated = todoService.get(id);
         return ApiResponse.of(ResponseDTO.from(updated), "updateSuccess");
     }
 

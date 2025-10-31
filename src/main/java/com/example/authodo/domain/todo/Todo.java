@@ -5,6 +5,8 @@ import com.example.authodo.common.error.BusinessException;
 import com.example.authodo.common.error.ErrorCode;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Getter
 @ToString
 @Builder(toBuilder = true)
@@ -22,6 +24,10 @@ public class Todo {
 
     @Builder.Default
     private final boolean completed = false;
+
+    private final LocalDateTime createdAt;
+
+    private final LocalDateTime modifiedAt;
 
     public static Todo create(String title, String content) {
         validateTitle(title);

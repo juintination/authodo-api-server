@@ -1,7 +1,6 @@
-package com.example.authodo.adapter.out.persistence.jpa;
+package com.example.authodo.adapter.out.persistence.jpa.repository;
 
 import com.example.authodo.adapter.out.persistence.jpa.entity.TodoJpaEntity;
-import com.example.authodo.adapter.out.persistence.jpa.repository.SpringDataTodoRepository;
 import com.example.authodo.domain.todo.Todo;
 import com.example.authodo.domain.todo.port.TodoRepositoryPort;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +32,8 @@ public class TodoRepositoryAdapter implements TodoRepositoryPort {
                 .content(todoJpaEntity.getContent())
                 .status(todoJpaEntity.getStatus())
                 .completed(todoJpaEntity.isCompleted())
+                .createdAt(todoJpaEntity.getCreatedAt())
+                .modifiedAt(todoJpaEntity.getModifiedAt())
                 .build();
     }
 
@@ -49,7 +50,7 @@ public class TodoRepositoryAdapter implements TodoRepositoryPort {
 
     @Override
     public List<Todo> findAll() {
-        return springDataTodoRepository.findAll().stream()
+        return springDataTodoRepository.findAllByOrderByIdDesc().stream()
                 .map(TodoRepositoryAdapter::toDomain)
                 .toList();
     }
