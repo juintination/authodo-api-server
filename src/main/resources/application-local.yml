@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: authodo
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${local.db.host}:${local.db.port}/${local.db.name}?serverTimezone=${server.time.zone}&characterEncoding=${character.encoding}
+    username: ${local.db.username}
+    password: ${local.db.password}
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+    show-sql: true
+    open-in-view: false
+
+logging:
+  level:
+    root: info
+    com.zaxxer: debug
+    org.springframework.security.web: trace
+    org.hibernate.SQL: debug
+    org.hibernate.orm.jdbc.bind: trace
