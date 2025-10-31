@@ -70,7 +70,6 @@ tasks.test {
 	outputs.dir(project.extra["snippetsDir"]!!)
 }
 
-extra["snippetsDir"] = file("build/generated-snippets")
 val snippetsDir = project.extra["snippetsDir"] as File
 
 tasks.asciidoctor {
