@@ -1,0 +1,38 @@
+spring:
+  application:
+    name: authodo-test
+
+  datasource:
+    url: jdbc:h2:mem:authodo-test;MODE=MySQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop   # 테스트 후 정리
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: true
+    show-sql: false
+    open-in-view: false
+
+  messages:
+    basename: messages
+    encoding: UTF-8
+    cache-duration: 1s
+
+  sql:
+    init:
+      mode: never
+
+server:
+  port: 0
+
+logging:
+  level:
+    root: warn
+    org.springframework: warn
+    org.hibernate.SQL: off
+    org.hibernate.orm.jdbc.bind: off

@@ -46,6 +46,9 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	runtimeOnly("com.mysql:mysql-connector-j")
 
+	// H2 (test 전용)
+	testImplementation("com.h2database:h2")
+
 	// Lombok & DevTools & Config metadata
 	compileOnly("org.projectlombok:lombok")
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
@@ -59,7 +62,6 @@ dependencies {
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
-
 tasks.withType<Test> {
 	useJUnitPlatform()
 }
@@ -68,7 +70,33 @@ tasks.test {
 	outputs.dir(project.extra["snippetsDir"]!!)
 }
 
+extra["snippetsDir"] = file("build/generated-snippets")
+val snippetsDir = project.extra["snippetsDir"] as File
+
 tasks.asciidoctor {
-	inputs.dir(project.extra["snippetsDir"]!!)
+	inputs.dir(snippetsDir)
+	attributes(mapOf("snippets" to snippetsDir))
+	baseDirFollowsSourceDir()
 	dependsOn(tasks.test)
+}
+
+// 생성된 HTML을 정적 리소스 위치로 복사
+val copyRestDocs by tasks.registering(Copy::class) {
+	dependsOn(tasks.asciidoctor)
+	from(tasks.asciidoctor.get().outputDir)
+	into(layout.buildDirectory.dir("resources/main/static/docs"))
+}
+
+tasks.named("copyRestDocs").configure {
+	mustRunAfter(tasks.processResources)
+}
+
+tasks.named("resolveMainClassName").configure {
+	dependsOn(tasks.named("copyRestDocs"))
+}
+
+tasks.bootRun { dependsOn(tasks.named("copyRestDocs")) }
+tasks.bootJar {
+	dependsOn(tasks.named("copyRestDocs"))
+	from(tasks.asciidoctor.get().outputDir) { into("static/docs") }
 }
