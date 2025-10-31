@@ -1,9 +1,10 @@
 package com.example.authodo.adapter.in.web.todo.dto;
 
-import com.example.authodo.adapter.out.persistence.jpa.entity.TodoJpaEntity;
+import com.example.authodo.domain.todo.Todo;
 import com.example.authodo.domain.todo.enums.TodoStatus;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.Builder;
 
 public class TodoDtos {
 
@@ -24,6 +25,7 @@ public class TodoDtos {
     public record CreateResponseDTO(Long id) {}
     public record DeleteResponseDTO(Long id) {}
 
+    @Builder
     public record ResponseDTO(
             Long id,
             String title,
@@ -33,16 +35,16 @@ public class TodoDtos {
             String createdAt,
             String modifiedAt
     ) {
-        public static ResponseDTO from(TodoJpaEntity e) {
-            return new ResponseDTO(
-                    e.getId(),
-                    e.getTitle(),
-                    e.getContent(),
-                    e.getStatus(),
-                    e.isCompleted(),
-                    e.getCreatedAt() == null ? null : e.getCreatedAt().toString(),
-                    e.getModifiedAt() == null ? null : e.getModifiedAt().toString()
-            );
+        public static ResponseDTO from(Todo todo) {
+            return ResponseDTO.builder()
+                    .id(todo.getId())
+                    .title(todo.getTitle())
+                    .content(todo.getContent())
+                    .status(todo.getStatus())
+                    .completed(todo.isCompleted())
+                    .createdAt(null)
+                    .modifiedAt(null)
+                    .build();
         }
     }
 
