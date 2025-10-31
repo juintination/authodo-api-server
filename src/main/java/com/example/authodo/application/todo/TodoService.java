@@ -1,11 +1,11 @@
 package com.example.authodo.application.todo;
 
-import com.example.authodo.application.todo.usecase.*;
 import com.example.authodo.common.error.BusinessException;
 import com.example.authodo.common.error.ErrorCode;
 import com.example.authodo.domain.todo.Todo;
 import com.example.authodo.domain.todo.enums.TodoStatus;
 import com.example.authodo.domain.todo.port.TodoRepositoryPort;
+import com.example.authodo.domain.todo.port.TodoUseCasePort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,12 +15,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class TodoService implements
-        CreateTodoUseCase,
-        GetTodoUseCase,
-        GetAllTodosUseCase,
-        UpdateTodoUseCase,
-        DeleteTodoUseCase {
+public class TodoService implements TodoUseCasePort {
 
     private final TodoRepositoryPort todoRepositoryPort;
 
