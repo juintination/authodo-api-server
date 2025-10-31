@@ -1,8 +1,6 @@
 package com.example.authodo.adapter.out.persistence.jpa.entity;
 
 import com.example.authodo.adapter.out.persistence.jpa.entity.base.TimeStampedEntity;
-import com.example.authodo.common.error.BusinessException;
-import com.example.authodo.common.error.ErrorCode;
 import com.example.authodo.domain.todo.enums.TodoStatus;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
@@ -41,24 +39,5 @@ public class TodoJpaEntity extends TimeStampedEntity {
 
     @Column(name = "is_completed", nullable = false)
     private boolean completed = false;
-
-    public void changeTitle(String title) {
-        if (title == null || title.isBlank()) {
-            throw new BusinessException(ErrorCode.TODO_TITLE_REQUIRED);
-        }
-        this.title = title;
-    }
-
-    public void changeContent(String content) {
-        this.content = content;
-    }
-
-    public void changeStatus(TodoStatus status) {
-        if (status == null) {
-            throw new BusinessException(ErrorCode.TODO_STATUS_INVALID);
-        }
-        this.status = status;
-        this.completed = (status == TodoStatus.COMPLETED);
-    }
 
 }
