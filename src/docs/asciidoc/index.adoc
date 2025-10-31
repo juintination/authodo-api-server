@@ -6,32 +6,68 @@
 
 == Todo API
 
-=== 1. 생성 (POST /api/todos)
+---
+
+=== 생성 (POST /api/todos)
+
 include::{snippets}/todo-create/http-request.adoc[]
 include::{snippets}/todo-create/http-response.adoc[]
 include::{snippets}/todo-create/request-fields.adoc[]
 include::{snippets}/todo-create/response-fields.adoc[]
 
-=== 2. 단일 조회 (GET /api/todos/{id})
+==== 실패: 400 (유효성 오류)
+include::{snippets}/todo-create-400/http-request.adoc[]
+include::{snippets}/todo-create-400/http-response.adoc[]
+
+---
+
+=== 단일 조회 (GET /api/todos/{id})
+
 include::{snippets}/todo-get/http-request.adoc[]
 include::{snippets}/todo-get/http-response.adoc[]
-include::{snippets}/todo-get/response-fields.adoc[]
 include::{snippets}/todo-get/path-parameters.adoc[]
+include::{snippets}/todo-get/response-fields.adoc[]
 
-=== 3. 목록 조회 (GET /api/todos)
+==== 실패: 404 (존재하지 않는 자원)
+include::{snippets}/todo-get-404/http-request.adoc[]
+include::{snippets}/todo-get-404/http-response.adoc[]
+include::{snippets}/todo-get-404/path-parameters.adoc[]
+include::{snippets}/todo-get-404/response-fields.adoc[]
+
+---
+
+=== 목록 조회 (GET /api/todos)
+
 include::{snippets}/todo-getAll/http-request.adoc[]
 include::{snippets}/todo-getAll/http-response.adoc[]
 include::{snippets}/todo-getAll/response-fields.adoc[]
 
-=== 4. 수정 (PUT /api/todos/{id})
+---
+
+=== 수정 (PUT /api/todos/{id})
+
 include::{snippets}/todo-update/http-request.adoc[]
 include::{snippets}/todo-update/http-response.adoc[]
+include::{snippets}/todo-update/path-parameters.adoc[]
 include::{snippets}/todo-update/request-fields.adoc[]
 include::{snippets}/todo-update/response-fields.adoc[]
-include::{snippets}/todo-update/path-parameters.adoc[]
 
-=== 5. 삭제 (DELETE /api/todos/{id})
+==== 실패: 404 (존재하지 않는 자원)
+include::{snippets}/todo-update-404/http-request.adoc[]
+include::{snippets}/todo-update-404/http-response.adoc[]
+include::{snippets}/todo-update-404/path-parameters.adoc[]
+
+---
+
+=== 삭제 (DELETE /api/todos/{id})
+
 include::{snippets}/todo-delete/http-request.adoc[]
 include::{snippets}/todo-delete/http-response.adoc[]
-include::{snippets}/todo-delete/response-fields.adoc[]
 include::{snippets}/todo-delete/path-parameters.adoc[]
+include::{snippets}/todo-delete/response-fields.adoc[]
+
+==== 실패: 404 (존재하지 않는 자원)
+include::{snippets}/todo-delete-404/http-request.adoc[]
+include::{snippets}/todo-delete-404/http-response.adoc[]
+include::{snippets}/todo-delete-404/path-parameters.adoc[]
+include::{snippets}/todo-delete-404/response-fields.adoc[]
