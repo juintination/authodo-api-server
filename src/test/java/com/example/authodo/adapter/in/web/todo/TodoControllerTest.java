@@ -18,6 +18,7 @@ import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.mockito.BDDMockito.*;
@@ -39,10 +40,15 @@ class TodoControllerTest {
     private TodoService todoService;
 
     private Todo todo(Long id, String title, String content, TodoStatus status) {
-        return Todo.create(title, content).toBuilder()
+        LocalDateTime now = LocalDateTime.of(2025, 3, 12, 0, 0, 0);
+        return Todo.builder()
                 .id(id)
+                .title(title)
+                .content(content)
                 .status(status)
                 .completed(status == TodoStatus.COMPLETED)
+                .createdAt(now)
+                .modifiedAt(now)
                 .build();
     }
 
@@ -104,8 +110,8 @@ class TodoControllerTest {
                                 fieldWithPath("data.content").type(JsonFieldType.STRING).optional().description("내용"),
                                 fieldWithPath("data.status").type(JsonFieldType.STRING).description("상태(PENDING/IN_PROGRESS/COMPLETED)"),
                                 fieldWithPath("data.completed").type(JsonFieldType.BOOLEAN).description("완료 여부"),
-                                fieldWithPath("data.createdAt").type(JsonFieldType.NULL).optional().description("생성시각"),
-                                fieldWithPath("data.modifiedAt").type(JsonFieldType.NULL).optional().description("수정시각"),
+                                fieldWithPath("data.createdAt").type(JsonFieldType.STRING).optional().description("생성시각(ISO-8601)"),
+                                fieldWithPath("data.modifiedAt").type(JsonFieldType.STRING).optional().description("수정시각(ISO-8601)"),
                                 fieldWithPath("message").type(JsonFieldType.STRING).description("결과 메시지")
                         )
                 ));
@@ -152,8 +158,8 @@ class TodoControllerTest {
                                 fieldWithPath("data[].content").type(JsonFieldType.STRING).optional().description("내용"),
                                 fieldWithPath("data[].status").type(JsonFieldType.STRING).description("상태"),
                                 fieldWithPath("data[].completed").type(JsonFieldType.BOOLEAN).description("완료 여부"),
-                                fieldWithPath("data[].createdAt").type(JsonFieldType.NULL).optional().description("생성시각"),
-                                fieldWithPath("data[].modifiedAt").type(JsonFieldType.NULL).optional().description("수정시각"),
+                                fieldWithPath("data[].createdAt").type(JsonFieldType.STRING).optional().description("생성시각(ISO-8601)"),
+                                fieldWithPath("data[].modifiedAt").type(JsonFieldType.STRING).optional().description("수정시각(ISO-8601)"),
                                 fieldWithPath("message").type(JsonFieldType.STRING).description("결과 메시지")
                         )
                 ));
@@ -189,8 +195,8 @@ class TodoControllerTest {
                                 fieldWithPath("data.content").type(JsonFieldType.STRING).optional().description("내용"),
                                 fieldWithPath("data.status").type(JsonFieldType.STRING).description("상태"),
                                 fieldWithPath("data.completed").type(JsonFieldType.BOOLEAN).description("완료 여부"),
-                                fieldWithPath("data.createdAt").type(JsonFieldType.NULL).optional().description("생성시각"),
-                                fieldWithPath("data.modifiedAt").type(JsonFieldType.NULL).optional().description("수정시각"),
+                                fieldWithPath("data.createdAt").type(JsonFieldType.STRING).optional().description("생성시각(ISO-8601)"),
+                                fieldWithPath("data.modifiedAt").type(JsonFieldType.STRING).optional().description("수정시각(ISO-8601)"),
                                 fieldWithPath("message").type(JsonFieldType.STRING).description("결과 메시지")
                         )
                 ));
