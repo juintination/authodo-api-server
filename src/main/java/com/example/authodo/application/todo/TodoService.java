@@ -40,9 +40,9 @@ public class TodoService implements TodoUseCasePort {
     @Override
     @Transactional
     public void update(Long id, String title, String content, TodoStatus status) {
-        Todo existing = get(id);
-        Todo updated = existing.change(title, content, status);
-        todoRepositoryPort.save(updated);
+        Todo existing = todoRepositoryPort.findById(id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.TODO_NOT_FOUND, id));
+        existing.change(title, content, status);
     }
 
     @Override
