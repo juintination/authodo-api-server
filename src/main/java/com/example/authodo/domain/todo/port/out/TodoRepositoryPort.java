@@ -1,4 +1,4 @@
-package com.example.authodo.domain.todo.port;
+package com.example.authodo.domain.todo.port.out;
 
 import com.example.authodo.domain.todo.Todo;
 

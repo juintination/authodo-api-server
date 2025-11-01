@@ -1,4 +1,4 @@
-package com.example.authodo.domain.todo.port;
+package com.example.authodo.domain.todo.port.in;
 
 import com.example.authodo.domain.todo.Todo;
 import com.example.authodo.domain.todo.enums.TodoStatus;

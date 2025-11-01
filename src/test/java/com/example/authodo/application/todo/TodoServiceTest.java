@@ -4,7 +4,7 @@ import com.example.authodo.common.error.BusinessException;
 import com.example.authodo.common.error.ErrorCode;
 import com.example.authodo.domain.todo.Todo;
 import com.example.authodo.domain.todo.enums.TodoStatus;
-import com.example.authodo.domain.todo.port.TodoRepositoryPort;
+import com.example.authodo.domain.todo.port.out.TodoRepositoryPort;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

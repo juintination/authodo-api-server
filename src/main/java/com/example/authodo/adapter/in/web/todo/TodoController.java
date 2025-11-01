@@ -6,7 +6,7 @@ import com.example.authodo.adapter.in.web.todo.dto.TodoDtos.DeleteResponseDTO;
 import com.example.authodo.adapter.in.web.todo.dto.TodoDtos.ResponseDTO;
 import com.example.authodo.common.response.ApiResponse;
 import com.example.authodo.domain.todo.Todo;
-import com.example.authodo.domain.todo.port.TodoUseCasePort;
+import com.example.authodo.domain.todo.port.in.TodoUseCasePort;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
