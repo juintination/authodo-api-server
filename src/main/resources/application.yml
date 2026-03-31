@@ -1,6 +1,37 @@
+server:
+  port: 8080
+
 spring:
-  profiles:
-    active: ${spring.profiles.active:local}
+  application:
+    name: authodo-service
+
+  config:
+    import: file:.env.${spring.profiles.active}[.properties]
+
   messages:
     basename: messages
     encoding: UTF-8
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${db.host}:${db.port}/${db.name}?serverTimezone=${server.time.zone}&characterEncoding=${character.encoding}
+    username: ${db.username}
+    password: ${db.password}
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: true
+    show-sql: true
+    open-in-view: false
+
+logging:
+  level:
+    root: info
+    com.zaxxer: debug
+    org.springframework.security.web: trace
+    org.hibernate.SQL: debug
+    org.hibernate.orm.jdbc.bind: trace
