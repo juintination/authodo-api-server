@@ -2,15 +2,14 @@ package com.example.authodo.adapter.out.persistence.jpa.entity;
 
 import com.example.authodo.adapter.out.persistence.jpa.entity.base.TimeStampedEntity;
 import com.example.authodo.domain.todo.enums.TodoStatus;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
-import jakarta.persistence.Id;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
+import io.hypersistence.utils.hibernate.id.Tsid;
 import jakarta.persistence.Column;
-import lombok.Getter;
-import lombok.Builder;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
@@ -24,8 +23,8 @@ import lombok.ToString;
 public class TodoJpaEntity extends TimeStampedEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(columnDefinition = "INT UNSIGNED")
+    @Tsid
+    @Column(columnDefinition = "BIGINT UNSIGNED")
     private Long id;
 
     @Column(nullable = false, length = 200)
