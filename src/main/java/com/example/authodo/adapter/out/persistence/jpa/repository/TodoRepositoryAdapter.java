@@ -17,6 +17,7 @@ public class TodoRepositoryAdapter implements TodoRepositoryPort {
     private static TodoJpaEntity toEntity(Todo todo) {
         return TodoJpaEntity.builder()
             .id(todo.getId())
+            .userId(todo.getUserId())
             .title(todo.getTitle())
             .content(todo.getContent())
             .status(todo.getStatus())
@@ -27,6 +28,7 @@ public class TodoRepositoryAdapter implements TodoRepositoryPort {
     private static Todo toDomain(TodoJpaEntity todoJpaEntity) {
         return Todo.builder()
             .id(todoJpaEntity.getId())
+            .userId(todoJpaEntity.getUserId())
             .title(todoJpaEntity.getTitle())
             .content(todoJpaEntity.getContent())
             .status(todoJpaEntity.getStatus())
@@ -43,13 +45,13 @@ public class TodoRepositoryAdapter implements TodoRepositoryPort {
     }
 
     @Override
-    public Optional<Todo> findById(Long id) {
-        return springDataTodoRepository.findById(id).map(TodoRepositoryAdapter::toDomain);
+    public Optional<Todo> findByUserIdAndId(Long userId, Long id) {
+        return springDataTodoRepository.findByUserIdAndId(userId, id).map(TodoRepositoryAdapter::toDomain);
     }
 
     @Override
-    public List<Todo> findAll() {
-        return springDataTodoRepository.findAllByOrderByIdDesc().stream()
+    public List<Todo> findAllByUserId(Long userId) {
+        return springDataTodoRepository.findAllByUserIdOrderByIdDesc(userId).stream()
             .map(TodoRepositoryAdapter::toDomain)
             .toList();
     }

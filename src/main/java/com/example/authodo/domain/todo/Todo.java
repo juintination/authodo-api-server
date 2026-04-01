@@ -16,6 +16,8 @@ public class Todo {
 
     private final Long id;
 
+    private final Long userId;
+
     private final String title;
 
     private final String content;
@@ -30,9 +32,10 @@ public class Todo {
 
     private final LocalDateTime modifiedAt;
 
-    public static Todo create(String title, String content) {
+    public static Todo create(Long userId, String title, String content) {
         return Todo.builder()
             .id(null)
+            .userId(userId)
             .title(title)
             .content(content)
             .status(TodoStatus.PENDING)

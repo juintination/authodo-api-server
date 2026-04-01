@@ -20,38 +20,37 @@ public class TodoService implements TodoUseCasePort {
 
     @Override
     @Transactional
-    public Todo create(String title, String content) {
-        Todo todo = Todo.create(title, content);
+    public Todo create(Long userId, String title, String content) {
+        Todo todo = Todo.create(userId, title, content);
         return todoRepositoryPort.save(todo);
     }
 
     @Override
-    public Todo get(Long id) {
-        return todoRepositoryPort.findById(id)
-            .orElseThrow(() -> new BusinessException(ErrorCode.TODO_NOT_FOUND, id));
+    public Todo get(Long userId, Long todoId) {
+        return todoRepositoryPort.findByUserIdAndId(userId, todoId)
+            .orElseThrow(() -> new BusinessException(ErrorCode.TODO_NOT_FOUND, todoId));
     }
 
     @Override
-    public List<Todo> getAll() {
-        return todoRepositoryPort.findAll();
+    public List<Todo> getAll(Long userId) {
+        return todoRepositoryPort.findAllByUserId(userId);
     }
 
     @Override
     @Transactional
-    public void update(Long id, String title, String content, TodoStatus status) {
-        Todo existing = todoRepositoryPort.findById(id)
-            .orElseThrow(() -> new BusinessException(ErrorCode.TODO_NOT_FOUND, id));
+    public void update(Long userId, Long todoId, String title, String content, TodoStatus status) {
+        Todo existing = todoRepositoryPort.findByUserIdAndId(userId, todoId)
+            .orElseThrow(() -> new BusinessException(ErrorCode.TODO_NOT_FOUND, todoId));
         Todo updated = existing.change(title, content, status);
         todoRepositoryPort.save(updated);
     }
 
     @Override
     @Transactional
-    public void delete(Long id) {
-        if (todoRepositoryPort.findById(id).isEmpty()) {
-            throw new BusinessException(ErrorCode.TODO_NOT_FOUND, id);
+    public void delete(Long userId, Long todoId) {
+        if (todoRepositoryPort.findByUserIdAndId(userId, todoId).isEmpty()) {
+            throw new BusinessException(ErrorCode.TODO_NOT_FOUND, todoId);
         }
-        todoRepositoryPort.deleteById(id);
+        todoRepositoryPort.deleteById(todoId);
     }
-
 }

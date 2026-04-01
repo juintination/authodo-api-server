@@ -1,5 +1,6 @@
 package com.example.authodo.adapter.in.web.todo;
 
+import com.example.authodo.adapter.in.web.security.util.SecurityUtil;
 import com.example.authodo.adapter.in.web.todo.dto.TodoDtos.TodoCreateRequest;
 import com.example.authodo.adapter.in.web.todo.dto.TodoDtos.TodoResponse;
 import com.example.authodo.adapter.in.web.todo.dto.TodoDtos.TodoUpdateRequest;
@@ -24,45 +25,65 @@ import org.springframework.web.bind.annotation.RestController;
 public class TodoController {
 
     private final TodoUseCasePort todoUseCasePort;
+    private final SecurityUtil securityUtil;
 
     @PostMapping
     public ApiResponse<Long> create(
         @Valid @RequestBody TodoCreateRequest request
     ) {
-        Todo result = todoUseCasePort.create(request.title(), request.content());
+        Long userId = securityUtil.getCurrentUserId();
+
+        Todo result = todoUseCasePort.create(
+            userId,
+            request.title(),
+            request.content()
+        );
+
         return ApiResponse.success(result.getId());
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{todoId}")
     public ApiResponse<TodoResponse> get(
-        @PathVariable Long id
+        @PathVariable Long todoId
     ) {
-        Todo result = todoUseCasePort.get(id);
+        Long userId = securityUtil.getCurrentUserId();
+
+        Todo result = todoUseCasePort.get(userId, todoId);
+
         return ApiResponse.success(TodoResponse.from(result));
     }
 
     @GetMapping
     public ApiResponse<List<TodoResponse>> getAll() {
-        List<TodoResponse> result = todoUseCasePort.getAll().stream()
+        Long userId = securityUtil.getCurrentUserId();
+
+        List<TodoResponse> result = todoUseCasePort.getAll(userId).stream()
             .map(TodoResponse::from)
             .toList();
+
         return ApiResponse.success(result);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/{todoId}")
     public ApiResponse update(
-        @PathVariable Long id,
+        @PathVariable Long todoId,
         @Valid @RequestBody TodoUpdateRequest request
     ) {
-        todoUseCasePort.update(id, request.title(), request.content(), request.status());
+        Long userId = securityUtil.getCurrentUserId();
+
+        todoUseCasePort.update(userId, todoId, request.title(), request.content(), request.status());
+
         return ApiResponse.success(null);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{todoId}")
     public ApiResponse delete(
-        @PathVariable Long id
+        @PathVariable Long todoId
     ) {
-        todoUseCasePort.delete(id);
+        Long userId = securityUtil.getCurrentUserId();
+
+        todoUseCasePort.delete(userId, todoId);
+
         return ApiResponse.success(null);
     }
 }

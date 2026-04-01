@@ -27,6 +27,9 @@ public class TodoJpaEntity extends TimeStampedEntity {
     @Column(columnDefinition = "BIGINT UNSIGNED")
     private Long id;
 
+    @Column(name = "user_id", nullable = false, columnDefinition = "BIGINT UNSIGNED")
+    private Long userId;
+
     @Column(nullable = false, length = 200)
     private String title;
 
