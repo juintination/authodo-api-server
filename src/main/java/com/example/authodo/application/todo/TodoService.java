@@ -41,8 +41,8 @@ public class TodoService implements TodoUseCasePort {
     public void update(Long id, String title, String content, TodoStatus status) {
         Todo existing = todoRepositoryPort.findById(id)
             .orElseThrow(() -> new BusinessException(ErrorCode.TODO_NOT_FOUND, id));
-        existing.change(title, content, status);
-        todoRepositoryPort.save(existing);
+        Todo updated = existing.change(title, content, status);
+        todoRepositoryPort.save(updated);
     }
 
     @Override
