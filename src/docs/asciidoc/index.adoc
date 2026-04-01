@@ -50,3 +50,31 @@ include::{snippets}/todo-delete/http-request.adoc[]
 include::{snippets}/todo-delete/http-response.adoc[]
 include::{snippets}/todo-delete/path-parameters.adoc[]
 include::{snippets}/todo-delete/response-fields.adoc[]
+
+== Auth API
+
+---
+
+=== 회원가입 (POST /api/auth/signup)
+
+include::{snippets}/auth-signup/http-request.adoc[]
+include::{snippets}/auth-signup/http-response.adoc[]
+include::{snippets}/auth-signup/request-fields.adoc[]
+include::{snippets}/auth-signup/response-fields.adoc[]
+
+---
+
+=== 로그인 (POST /api/auth/login)
+
+include::{snippets}/auth-login/http-request.adoc[]
+include::{snippets}/auth-login/http-response.adoc[]
+include::{snippets}/auth-login/request-fields.adoc[]
+include::{snippets}/auth-login/response-fields.adoc[]
+
+---
+
+=== 내 정보 조회 (GET /api/auth/me)
+
+include::{snippets}/auth-me/http-request.adoc[]
+include::{snippets}/auth-me/http-response.adoc[]
+include::{snippets}/auth-me/response-fields.adoc[]
