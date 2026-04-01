@@ -26,6 +26,7 @@ repositories {
 }
 
 extra["snippetsDir"] = file("build/generated-snippets")
+val snippetsDir = project.extra["snippetsDir"] as File
 
 dependencies {
     // Web & Validation
@@ -67,14 +68,10 @@ dependencies {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+    outputs.dir(snippetsDir)
 }
 
-tasks.test {
-    outputs.dir(project.extra["snippetsDir"]!!)
-}
-
-val snippetsDir = project.extra["snippetsDir"] as File
-
+// Asciidoctor HTML 생성
 tasks.asciidoctor {
     inputs.dir(snippetsDir)
     attributes(mapOf("snippets" to snippetsDir))
@@ -89,16 +86,19 @@ val copyRestDocs by tasks.registering(Copy::class) {
     into(layout.buildDirectory.dir("resources/main/static/docs"))
 }
 
-tasks.named("copyRestDocs").configure {
-    mustRunAfter(tasks.processResources)
+// copyDocs가 processResources 후 실행되도록
+tasks.named("processResources") {
+    finalizedBy(copyRestDocs)
 }
 
-tasks.named("resolveMainClassName").configure {
-    dependsOn(tasks.named("copyRestDocs"))
+// bootRun과 bootJar가 항상 copyDocs를 포함하도록
+tasks.bootRun {
+    dependsOn(copyRestDocs)
 }
 
-tasks.bootRun { dependsOn(tasks.named("copyRestDocs")) }
 tasks.bootJar {
-    dependsOn(tasks.named("copyRestDocs"))
-    from(tasks.asciidoctor.get().outputDir) { into("static/docs") }
+    dependsOn(copyRestDocs)
+    from(tasks.asciidoctor.get().outputDir) {
+        into("static/docs")
+    }
 }
