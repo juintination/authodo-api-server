@@ -36,3 +36,10 @@ logging:
     org.springframework: warn
     org.hibernate.SQL: off
     org.hibernate.orm.jdbc.bind: off
+
+jwt:
+  secret: 1234567890123456789012345678901234567890
+  access:
+    expiration-ms: 600000
+  refresh:
+    expiration-ms: 1209600000
