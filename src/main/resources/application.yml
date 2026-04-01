@@ -35,3 +35,10 @@ logging:
     org.springframework.security.web: trace
     org.hibernate.SQL: debug
     org.hibernate.orm.jdbc.bind: trace
+
+jwt:
+  secret: ${jwt.secret}
+  access:
+    expiration-ms: ${jwt.access.expiration-ms}
+  refresh:
+    expiration-ms: ${jwt.refresh.expiration-ms}
