@@ -3,6 +3,10 @@ package com.example.authodo.common.error;
 import com.example.authodo.common.response.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
+import java.util.List;
+import java.util.Locale;
+import java.util.stream.Collectors;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,11 +15,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.time.Instant;
-import java.util.LinkedHashMap;
-import java.util.Locale;
-import java.util.Map;
-
+@Log4j2
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -25,67 +25,175 @@ public class GlobalExceptionHandler {
         this.messageSource = messageSource;
     }
 
+    /**
+     * @Valid (RequestBody)
+     */
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiResponse<Map<String, String>>> handleMethodArgumentNotValid(
-            MethodArgumentNotValidException ex, Locale locale) {
+    public ResponseEntity<ApiResponse<ErrorResponse>> handleMethodArgumentNotValid(
+        MethodArgumentNotValidException ex,
+        HttpServletRequest req,
+        Locale locale
+    ) {
 
-        Map<String, String> errors = new LinkedHashMap<>();
-        ex.getBindingResult().getFieldErrors()
-                .forEach(err -> errors.put(err.getField(), err.getDefaultMessage()));
+        log.warn("Validation failed: {}", ex.getMessage());
 
-        String msg = messageSource.getMessage("error.common.invalid-argument", null, locale);
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.of(errors, msg));
+        List<ErrorResponse.FieldErrorDetail> errors = ex.getBindingResult()
+            .getFieldErrors()
+            .stream()
+            .map(err -> new ErrorResponse.FieldErrorDetail(
+                err.getField(),
+                err.getCode(),
+                err.getDefaultMessage()
+            ))
+            .collect(Collectors.toList());
+
+        String message = messageSource.getMessage(
+            "error.common.invalid-argument", null, locale
+        );
+
+        ErrorResponse response = ErrorResponse.of(
+            req.getRequestURI(),
+            req.getMethod(),
+            ErrorCode.INVALID_ARGUMENT.name(),
+            errors
+        );
+
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(ApiResponse.error(response, message));
     }
 
+    /**
+     * @Validated (Query, PathVariable)
+     */
     @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<ApiResponse<Map<String, String>>> handleConstraintViolation(
-            ConstraintViolationException ex, Locale locale) {
+    public ResponseEntity<ApiResponse<ErrorResponse>> handleConstraintViolation(
+        ConstraintViolationException ex,
+        HttpServletRequest req,
+        Locale locale
+    ) {
 
-        Map<String, String> errors = new LinkedHashMap<>();
-        ex.getConstraintViolations().forEach(v -> errors.put(v.getPropertyPath().toString(), v.getMessage()));
+        log.warn("Constraint violation: {}", ex.getMessage());
 
-        String msg = messageSource.getMessage("error.common.invalid-argument", null, locale);
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.of(errors, msg));
+        List<ErrorResponse.FieldErrorDetail> errors = ex.getConstraintViolations()
+            .stream()
+            .map(v -> new ErrorResponse.FieldErrorDetail(
+                extractField(v.getPropertyPath().toString()),
+                v.getConstraintDescriptor().getAnnotation().annotationType().getSimpleName(),
+                v.getMessage()
+            ))
+            .collect(Collectors.toList());
+
+        String message = messageSource.getMessage(
+            "error.common.invalid-argument", null, locale
+        );
+
+        ErrorResponse response = ErrorResponse.of(
+            req.getRequestURI(),
+            req.getMethod(),
+            ErrorCode.INVALID_ARGUMENT.name(),
+            errors
+        );
+
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(ApiResponse.error(response, message));
     }
 
+    /**
+     * JSON 파싱 에러
+     */
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<ApiResponse<Map<String, String>>> handleNotReadable(
-            HttpMessageNotReadableException ex, Locale locale) {
+    public ResponseEntity<ApiResponse<ErrorResponse>> handleNotReadable(
+        HttpMessageNotReadableException ex,
+        HttpServletRequest req,
+        Locale locale
+    ) {
 
-        String msg = messageSource.getMessage("error.common.invalid-argument", null, locale);
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.of(Map.of(), msg));
+        log.warn("Malformed request body", ex);
+
+        String message = messageSource.getMessage(
+            "error.common.invalid-request-body", null, locale
+        );
+
+        ErrorResponse response = ErrorResponse.of(
+            req.getRequestURI(),
+            req.getMethod(),
+            ErrorCode.INVALID_ARGUMENT.name()
+        );
+
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(ApiResponse.error(response, message));
     }
 
+    /**
+     * 비즈니스 예외
+     */
     @ExceptionHandler(BusinessException.class)
-    public ResponseEntity<ApiResponse<ErrorResponse>> handleBusiness(BusinessException ex,
-                                                                     HttpServletRequest req,
-                                                                     Locale locale) {
+    public ResponseEntity<ApiResponse<ErrorResponse>> handleBusiness(
+        BusinessException ex,
+        HttpServletRequest request,
+        Locale locale
+    ) {
+
         ErrorCode code = ex.getErrorCode();
-        String message = messageSource.getMessage(code.getMessageKey(), ex.getMessageArgs(), locale);
 
-        ErrorResponse error = ErrorResponse.builder()
-                .timestamp(Instant.now().toString())
-                .path(req.getRequestURI())
-                .code(code.name())
-                .build();
+        String message = messageSource.getMessage(
+            code.getMessageKey(),
+            ex.getMessageArgs(),
+            locale
+        );
 
-        return ResponseEntity.status(code.getHttpStatus()).body(ApiResponse.of(error, message));
+        log.info("Business exception: code={}, message={}", code, message);
+
+        ErrorResponse response = ErrorResponse.of(
+            request.getRequestURI(),
+            request.getMethod(),
+            code.name()
+        );
+
+        return ResponseEntity
+            .status(code.getHttpStatus())
+            .body(ApiResponse.error(response, message));
     }
 
+    /**
+     * 예상 못한 예외
+     */
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse<ErrorResponse>> handleEtc(Exception ex,
-                                                                HttpServletRequest req,
-                                                                Locale locale) {
+    public ResponseEntity<ApiResponse<ErrorResponse>> handleEtc(
+        Exception ex,
+        HttpServletRequest request,
+        Locale locale
+    ) {
+
+        log.error("Unhandled exception", ex);
+
         ErrorCode code = ErrorCode.INTERNAL_ERROR;
-        String message = messageSource.getMessage(code.getMessageKey(), null, locale);
 
-        ErrorResponse error = ErrorResponse.builder()
-                .timestamp(Instant.now().toString())
-                .path(req.getRequestURI())
-                .code(code.name())
-                .build();
+        String message = messageSource.getMessage(
+            code.getMessageKey(),
+            null,
+            locale
+        );
 
-        return ResponseEntity.status(code.getHttpStatus()).body(ApiResponse.of(error, message));
+        ErrorResponse response = ErrorResponse.of(
+            request.getRequestURI(),
+            request.getMethod(),
+            code.name()
+        );
+
+        return ResponseEntity
+            .status(code.getHttpStatus())
+            .body(ApiResponse.error(response, message));
     }
 
+    /**
+     * propertyPath 정제
+     */
+    private String extractField(String path) {
+        int lastDot = path.lastIndexOf('.');
+        return (lastDot != -1) ? path.substring(lastDot + 1) : path;
+    }
 }

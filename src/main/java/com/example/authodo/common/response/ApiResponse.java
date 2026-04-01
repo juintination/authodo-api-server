@@ -1,25 +1,43 @@
 package com.example.authodo.common.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 
 @Builder
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public record ApiResponse<T>(
-        T data,
-        String message
+    boolean success,
+    T data,
+    String message
 ) {
-    public static <T> ApiResponse<T> of(T data, String message) {
-        return ApiResponse.<T>builder()
-                .data(data)
-                .message(message)
-                .build();
-    }
 
     public static <T> ApiResponse<T> success(T data) {
-        return of(data, "success");
+        return ApiResponse.<T>builder()
+            .success(true)
+            .data(data)
+            .build();
     }
 
-    public static ApiResponse<Void> message(String message) {
-        return of(null, message);
+    public static <T> ApiResponse<T> success(T data, String message) {
+        return ApiResponse.<T>builder()
+            .success(true)
+            .data(data)
+            .message(message)
+            .build();
     }
 
+    public static <T> ApiResponse<T> error(T data, String message) {
+        return ApiResponse.<T>builder()
+            .success(false)
+            .data(data)
+            .message(message)
+            .build();
+    }
+
+    public static ApiResponse<Void> error(String message) {
+        return ApiResponse.<Void>builder()
+            .success(false)
+            .message(message)
+            .build();
+    }
 }
