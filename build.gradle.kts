@@ -25,8 +25,7 @@ repositories {
     mavenCentral()
 }
 
-extra["snippetsDir"] = file("build/generated-snippets")
-val snippetsDir = project.extra["snippetsDir"] as File
+val snippetsDir = file("build/generated-snippets")
 
 dependencies {
     // Web & Validation
@@ -69,14 +68,16 @@ dependencies {
 tasks.withType<Test> {
     useJUnitPlatform()
     outputs.dir(snippetsDir)
+    finalizedBy(tasks.asciidoctor)
 }
 
 // Asciidoctor HTML 생성
 tasks.asciidoctor {
+    dependsOn(tasks.test)
     inputs.dir(snippetsDir)
     attributes(mapOf("snippets" to snippetsDir))
     baseDirFollowsSourceDir()
-    dependsOn(tasks.test)
+    finalizedBy("copyRestDocs")
 }
 
 // 생성된 HTML을 정적 리소스 위치로 복사
@@ -86,19 +87,19 @@ val copyRestDocs by tasks.registering(Copy::class) {
     into(layout.buildDirectory.dir("resources/main/static/docs"))
 }
 
-// copyDocs가 processResources 후 실행되도록
-tasks.named("processResources") {
-    finalizedBy(copyRestDocs)
-}
-
-// bootRun과 bootJar가 항상 copyDocs를 포함하도록
-tasks.bootRun {
-    dependsOn(copyRestDocs)
-}
-
+// 빌드 및 실행 시 문서가 포함되도록 보장
 tasks.bootJar {
     dependsOn(copyRestDocs)
     from(tasks.asciidoctor.get().outputDir) {
         into("static/docs")
     }
+}
+
+tasks.bootRun {
+    dependsOn(copyRestDocs)
+}
+
+// 전체 build 수행 시 copyRestDocs가 완료되어야 함을 명시
+tasks.build {
+    dependsOn(copyRestDocs)
 }
