@@ -4,13 +4,12 @@ import com.example.authodo.common.error.BusinessException;
 import com.example.authodo.common.error.ErrorCode;
 import com.example.authodo.domain.todo.Todo;
 import com.example.authodo.domain.todo.enums.TodoStatus;
-import com.example.authodo.domain.todo.port.out.TodoRepositoryPort;
 import com.example.authodo.domain.todo.port.in.TodoUseCasePort;
+import com.example.authodo.domain.todo.port.out.TodoRepositoryPort;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -29,7 +28,7 @@ public class TodoService implements TodoUseCasePort {
     @Override
     public Todo get(Long id) {
         return todoRepositoryPort.findById(id)
-                .orElseThrow(() -> new BusinessException(ErrorCode.TODO_NOT_FOUND, id));
+            .orElseThrow(() -> new BusinessException(ErrorCode.TODO_NOT_FOUND, id));
     }
 
     @Override
@@ -41,8 +40,9 @@ public class TodoService implements TodoUseCasePort {
     @Transactional
     public void update(Long id, String title, String content, TodoStatus status) {
         Todo existing = todoRepositoryPort.findById(id)
-                .orElseThrow(() -> new BusinessException(ErrorCode.TODO_NOT_FOUND, id));
+            .orElseThrow(() -> new BusinessException(ErrorCode.TODO_NOT_FOUND, id));
         existing.change(title, content, status);
+        todoRepositoryPort.save(existing);
     }
 
     @Override

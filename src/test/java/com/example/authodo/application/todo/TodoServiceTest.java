@@ -6,7 +6,6 @@ import static org.mockito.BDDMockito.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.verify;
 import static org.mockito.BDDMockito.willDoNothing;
-import static org.mockito.Mockito.spy;
 
 import com.example.authodo.common.error.BusinessException;
 import com.example.authodo.common.error.ErrorCode;
@@ -109,15 +108,17 @@ class TodoServiceTest {
     @DisplayName("update() - 제목, 내용, 상태 수정")
     void update_success() {
         // given
-        Todo existing = spy(sampleTodo(1L, "기존 제목", "기존 내용", TodoStatus.PENDING));
+        Todo existing = sampleTodo(1L, "기존 제목", "기존 내용", TodoStatus.PENDING);
+        Todo updated = existing.change("새 제목", "새 내용", TodoStatus.COMPLETED);
         given(todoRepositoryPort.findById(1L)).willReturn(Optional.of(existing));
+        given(todoRepositoryPort.save(any(Todo.class))).willReturn(updated);
 
         // when
         todoService.update(1L, "새 제목", "새 내용", TodoStatus.COMPLETED);
 
         // then
-        verify(existing).change("새 제목", "새 내용", TodoStatus.COMPLETED);
         verify(todoRepositoryPort).findById(1L);
+        verify(todoRepositoryPort).save(any(Todo.class));
     }
 
     @Test
