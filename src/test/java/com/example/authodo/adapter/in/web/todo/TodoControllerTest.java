@@ -24,9 +24,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
 import org.springframework.restdocs.payload.JsonFieldType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebRestDocsTest
+@WithMockUser(username = "1")
 @DisplayName("TodoController 통합 테스트")
 class TodoControllerTest {
 
@@ -78,11 +80,12 @@ class TodoControllerTest {
                     fieldWithPath("data.title").type(JsonFieldType.STRING).description("제목"),
                     fieldWithPath("data.content").type(JsonFieldType.STRING).optional().description("내용"),
                     fieldWithPath("data.status").type(JsonFieldType.STRING)
-                        .description("상태(PENDING/IN_PROGRESS/COMPLETED)"),
+                        .description("상태 (PENDING / IN_PROGRESS / COMPLETED)"),
                     fieldWithPath("data.completed").type(JsonFieldType.BOOLEAN).description("완료 여부"),
-                    fieldWithPath("data.createdAt").type(JsonFieldType.STRING).optional().description("생성시각(ISO-8601)"),
+                    fieldWithPath("data.createdAt").type(JsonFieldType.STRING).optional()
+                        .description("생성시각 (ISO-8601)"),
                     fieldWithPath("data.modifiedAt").type(JsonFieldType.STRING).optional()
-                        .description("수정시각(ISO-8601)"),
+                        .description("수정시각 (ISO-8601)"),
                     fieldWithPath("message").type(JsonFieldType.STRING).optional().description("결과 메시지")
                 )
             ));
@@ -106,9 +109,9 @@ class TodoControllerTest {
                     fieldWithPath("data[].status").type(JsonFieldType.STRING).description("상태"),
                     fieldWithPath("data[].completed").type(JsonFieldType.BOOLEAN).description("완료 여부"),
                     fieldWithPath("data[].createdAt").type(JsonFieldType.STRING).optional()
-                        .description("생성시각(ISO-8601)"),
+                        .description("생성시각 (ISO-8601)"),
                     fieldWithPath("data[].modifiedAt").type(JsonFieldType.STRING).optional()
-                        .description("수정시각(ISO-8601)"),
+                        .description("수정시각 (ISO-8601)"),
                     fieldWithPath("message").type(JsonFieldType.STRING).optional().description("결과 메시지")
                 )
             ));
@@ -119,8 +122,7 @@ class TodoControllerTest {
     void update_success() throws Exception {
         Long id = createTodoAndReturnId();
 
-        TodoUpdateRequest req =
-            new TodoUpdateRequest("수정된 제목", "수정된 내용", TodoStatus.COMPLETED);
+        TodoUpdateRequest req = new TodoUpdateRequest("수정된 제목", "수정된 내용", TodoStatus.COMPLETED);
 
         mockMvc.perform(RestDocumentationRequestBuilders.put("/api/todos/{id}", id)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -129,14 +131,16 @@ class TodoControllerTest {
             .andDo(document("todo-update",
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
-                pathParameters(parameterWithName("id").description("수정할 ID")),
+                pathParameters(parameterWithName("id").description("수정할 Todo ID")),
                 requestFields(
                     fieldWithPath("title").type(JsonFieldType.STRING).optional().description("새 제목"),
                     fieldWithPath("content").type(JsonFieldType.STRING).optional().description("새 내용"),
-                    fieldWithPath("status").type(JsonFieldType.STRING).optional().description("새 상태")
+                    fieldWithPath("status").type(JsonFieldType.STRING).optional()
+                        .description("새 상태 (PENDING / IN_PROGRESS / COMPLETED)")
                 ),
                 responseFields(
                     fieldWithPath("success").type(JsonFieldType.BOOLEAN).description("성공 여부"),
+                    fieldWithPath("data").type(JsonFieldType.NULL).optional().description("반환 데이터 없음"),
                     fieldWithPath("message").type(JsonFieldType.STRING).optional().description("결과 메시지")
                 )
             ));
@@ -151,9 +155,10 @@ class TodoControllerTest {
             .andExpect(status().isOk())
             .andDo(document("todo-delete",
                 preprocessResponse(prettyPrint()),
-                pathParameters(parameterWithName("id").description("삭제할 ID")),
+                pathParameters(parameterWithName("id").description("삭제할 Todo ID")),
                 responseFields(
                     fieldWithPath("success").type(JsonFieldType.BOOLEAN).description("성공 여부"),
+                    fieldWithPath("data").type(JsonFieldType.NULL).optional().description("반환 데이터 없음"),
                     fieldWithPath("message").type(JsonFieldType.STRING).optional().description("결과 메시지")
                 )
             ));
@@ -165,6 +170,7 @@ class TodoControllerTest {
         String response = mockMvc.perform(post("/api/todos")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isOk())
             .andReturn()
             .getResponse()
             .getContentAsString();
