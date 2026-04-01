@@ -1,9 +1,9 @@
-package com.example.authodo.adapter.in.web.formatter;
+package com.example.authodo.adapter.in.web.common.formatter;
 
-import org.springframework.format.Formatter;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
+import org.springframework.format.Formatter;
 
 public class LocalDateFormatter implements Formatter<LocalDate> {
 

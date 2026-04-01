@@ -1,6 +1,6 @@
-package com.example.authodo.adapter.in.web.config;
+package com.example.authodo.adapter.in.web.common.config;
 
-import com.example.authodo.adapter.in.web.formatter.LocalDateFormatter;
+import com.example.authodo.adapter.in.web.common.formatter.LocalDateFormatter;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
