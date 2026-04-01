@@ -1,22 +1,26 @@
 package com.example.authodo.application.todo;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.BDDMockito.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.verify;
+import static org.mockito.BDDMockito.willDoNothing;
+import static org.mockito.Mockito.spy;
+
 import com.example.authodo.common.error.BusinessException;
 import com.example.authodo.common.error.ErrorCode;
 import com.example.authodo.domain.todo.Todo;
 import com.example.authodo.domain.todo.enums.TodoStatus;
 import com.example.authodo.domain.todo.port.out.TodoRepositoryPort;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.List;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.BDDMockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("TodoService 단위 테스트")
@@ -30,10 +34,10 @@ class TodoServiceTest {
 
     private Todo sampleTodo(Long id, String title, String content, TodoStatus status) {
         return Todo.create(title, content).toBuilder()
-                .id(id)
-                .status(status)
-                .completed(status == TodoStatus.COMPLETED)
-                .build();
+            .id(id)
+            .status(status)
+            .completed(status == TodoStatus.COMPLETED)
+            .build();
     }
 
     @Test
@@ -77,8 +81,8 @@ class TodoServiceTest {
 
         // when & then
         assertThatThrownBy(() -> todoService.get(999L))
-                .isInstanceOf(BusinessException.class)
-                .hasMessageContaining(ErrorCode.TODO_NOT_FOUND.name());
+            .isInstanceOf(BusinessException.class)
+            .hasMessageContaining(ErrorCode.TODO_NOT_FOUND.name());
         verify(todoRepositoryPort).findById(999L);
     }
 
@@ -87,8 +91,8 @@ class TodoServiceTest {
     void getAll_success() {
         // given
         List<Todo> todos = List.of(
-                sampleTodo(1L, "첫번째", "내용1", TodoStatus.PENDING),
-                sampleTodo(2L, "두번째", "내용2", TodoStatus.COMPLETED)
+            sampleTodo(1L, "첫번째", "내용1", TodoStatus.PENDING),
+            sampleTodo(2L, "두번째", "내용2", TodoStatus.COMPLETED)
         );
         given(todoRepositoryPort.findAll()).willReturn(todos);
 
@@ -105,17 +109,15 @@ class TodoServiceTest {
     @DisplayName("update() - 제목, 내용, 상태 수정")
     void update_success() {
         // given
-        Todo existing = sampleTodo(1L, "기존 제목", "기존 내용", TodoStatus.PENDING);
-        Todo updated = existing.change("새 제목", "새 내용", TodoStatus.COMPLETED);
+        Todo existing = spy(sampleTodo(1L, "기존 제목", "기존 내용", TodoStatus.PENDING));
         given(todoRepositoryPort.findById(1L)).willReturn(Optional.of(existing));
-        given(todoRepositoryPort.save(any(Todo.class))).willReturn(updated);
 
         // when
         todoService.update(1L, "새 제목", "새 내용", TodoStatus.COMPLETED);
 
         // then
+        verify(existing).change("새 제목", "새 내용", TodoStatus.COMPLETED);
         verify(todoRepositoryPort).findById(1L);
-        verify(todoRepositoryPort).save(any(Todo.class));
     }
 
     @Test
@@ -126,9 +128,9 @@ class TodoServiceTest {
 
         // when & then
         assertThatThrownBy(() ->
-                todoService.update(1L, "수정", "내용", TodoStatus.PENDING))
-                .isInstanceOf(BusinessException.class)
-                .hasMessageContaining(ErrorCode.TODO_NOT_FOUND.name());
+            todoService.update(1L, "수정", "내용", TodoStatus.PENDING))
+            .isInstanceOf(BusinessException.class)
+            .hasMessageContaining(ErrorCode.TODO_NOT_FOUND.name());
     }
 
     @Test
@@ -154,8 +156,8 @@ class TodoServiceTest {
 
         // when & then
         assertThatThrownBy(() -> todoService.delete(1L))
-                .isInstanceOf(BusinessException.class)
-                .hasMessageContaining(ErrorCode.TODO_NOT_FOUND.name());
+            .isInstanceOf(BusinessException.class)
+            .hasMessageContaining(ErrorCode.TODO_NOT_FOUND.name());
     }
 
 }
