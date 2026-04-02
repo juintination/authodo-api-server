@@ -1,10 +1,10 @@
 package com.example.authodo.adapter.in.web.todo;
 
+import com.example.authodo.adapter.in.web.common.response.ApiResponse;
 import com.example.authodo.adapter.in.web.security.util.SecurityUtil;
 import com.example.authodo.adapter.in.web.todo.dto.TodoDtos.TodoCreateRequest;
 import com.example.authodo.adapter.in.web.todo.dto.TodoDtos.TodoResponse;
 import com.example.authodo.adapter.in.web.todo.dto.TodoDtos.TodoUpdateRequest;
-import com.example.authodo.common.response.ApiResponse;
 import com.example.authodo.domain.todo.Todo;
 import com.example.authodo.domain.todo.port.in.TodoUseCasePort;
 import jakarta.validation.Valid;

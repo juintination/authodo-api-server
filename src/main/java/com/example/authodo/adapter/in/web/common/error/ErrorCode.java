@@ -1,4 +1,4 @@
-package com.example.authodo.common.error;
+package com.example.authodo.adapter.in.web.common.error;
 
 import lombok.Getter;
 import org.springframework.http.HttpStatus;

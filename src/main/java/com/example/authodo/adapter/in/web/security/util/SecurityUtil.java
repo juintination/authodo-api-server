@@ -1,7 +1,7 @@
 package com.example.authodo.adapter.in.web.security.util;
 
+import com.example.authodo.adapter.in.web.common.error.ErrorCode;
 import com.example.authodo.adapter.in.web.security.exception.JwtAuthenticationException;
-import com.example.authodo.common.error.ErrorCode;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;

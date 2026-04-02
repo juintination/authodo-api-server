@@ -1,6 +1,6 @@
 package com.example.authodo.adapter.in.web.security.exception;
 
-import com.example.authodo.common.error.ErrorCode;
+import com.example.authodo.adapter.in.web.common.error.ErrorCode;
 import lombok.Getter;
 import org.springframework.security.core.AuthenticationException;
 

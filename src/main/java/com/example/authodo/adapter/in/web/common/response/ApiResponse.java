@@ -1,4 +1,4 @@
-package com.example.authodo.common.response;
+package com.example.authodo.adapter.in.web.common.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;

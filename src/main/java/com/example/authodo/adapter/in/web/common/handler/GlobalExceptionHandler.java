@@ -1,6 +1,9 @@
-package com.example.authodo.common.error;
+package com.example.authodo.adapter.in.web.common.handler;
 
-import com.example.authodo.common.response.ApiResponse;
+import com.example.authodo.adapter.in.web.common.error.ErrorCode;
+import com.example.authodo.adapter.in.web.common.error.ErrorResponse;
+import com.example.authodo.adapter.in.web.common.exception.BusinessException;
+import com.example.authodo.adapter.in.web.common.response.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import java.util.List;

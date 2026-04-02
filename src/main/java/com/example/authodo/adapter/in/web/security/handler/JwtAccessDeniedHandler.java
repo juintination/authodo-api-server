@@ -1,8 +1,8 @@
 package com.example.authodo.adapter.in.web.security.handler;
 
-import com.example.authodo.common.error.ErrorCode;
-import com.example.authodo.common.error.ErrorResponse;
-import com.example.authodo.common.response.ApiResponse;
+import com.example.authodo.adapter.in.web.common.error.ErrorCode;
+import com.example.authodo.adapter.in.web.common.error.ErrorResponse;
+import com.example.authodo.adapter.in.web.common.response.ApiResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

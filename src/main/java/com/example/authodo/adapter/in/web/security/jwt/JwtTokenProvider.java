@@ -1,7 +1,7 @@
 package com.example.authodo.adapter.in.web.security.jwt;
 
+import com.example.authodo.adapter.in.web.common.error.ErrorCode;
 import com.example.authodo.adapter.in.web.security.exception.JwtAuthenticationException;
-import com.example.authodo.common.error.ErrorCode;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtBuilder;

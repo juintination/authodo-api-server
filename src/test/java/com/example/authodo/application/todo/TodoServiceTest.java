@@ -6,8 +6,8 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.verify;
 import static org.mockito.BDDMockito.willDoNothing;
 
-import com.example.authodo.common.error.BusinessException;
-import com.example.authodo.common.error.ErrorCode;
+import com.example.authodo.adapter.in.web.common.error.ErrorCode;
+import com.example.authodo.adapter.in.web.common.exception.BusinessException;
 import com.example.authodo.domain.todo.Todo;
 import com.example.authodo.domain.todo.enums.TodoStatus;
 import com.example.authodo.domain.todo.port.out.TodoRepositoryPort;

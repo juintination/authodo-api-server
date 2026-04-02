@@ -1,7 +1,7 @@
 package com.example.authodo.application.auth;
 
-import com.example.authodo.common.error.BusinessException;
-import com.example.authodo.common.error.ErrorCode;
+import com.example.authodo.adapter.in.web.common.error.ErrorCode;
+import com.example.authodo.adapter.in.web.common.exception.BusinessException;
 import com.example.authodo.domain.auth.port.in.AuthUseCasePort;
 import com.example.authodo.domain.user.User;
 import com.example.authodo.domain.user.out.UserRepositoryPort;
