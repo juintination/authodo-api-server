@@ -1,5 +1,7 @@
 package com.example.authodo.adapter.in.web.security.util;
 
+import com.example.authodo.adapter.in.web.security.exception.JwtAuthenticationException;
+import com.example.authodo.common.error.ErrorCode;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -12,13 +14,13 @@ public class SecurityUtil {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null || !authentication.isAuthenticated()) {
-            throw new IllegalStateException("No authenticated user in SecurityContext");
+            throw new JwtAuthenticationException(ErrorCode.UNAUTHORIZED);
         }
 
         Object principal = authentication.getPrincipal();
 
         if (!(principal instanceof UserDetails userDetails)) {
-            throw new IllegalStateException("Principal is not of type UserDetails");
+            throw new JwtAuthenticationException(ErrorCode.UNAUTHORIZED);
         }
 
         return userDetails;

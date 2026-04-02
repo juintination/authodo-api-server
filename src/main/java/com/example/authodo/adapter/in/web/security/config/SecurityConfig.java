@@ -1,8 +1,9 @@
 package com.example.authodo.adapter.in.web.security.config;
 
 import com.example.authodo.adapter.in.web.security.filter.JwtAuthenticationFilter;
+import com.example.authodo.adapter.in.web.security.handler.JwtAccessDeniedHandler;
+import com.example.authodo.adapter.in.web.security.handler.JwtAuthenticationEntryPoint;
 import com.example.authodo.adapter.in.web.security.jwt.JwtTokenProvider;
-import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -28,10 +29,12 @@ public class SecurityConfig {
     };
 
     private final JwtTokenProvider tokenProvider;
+    private final JwtAuthenticationEntryPoint authenticationEntryPoint;
+    private final JwtAccessDeniedHandler accessDeniedHandler;
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
-        return new JwtAuthenticationFilter(tokenProvider);
+        return new JwtAuthenticationFilter(tokenProvider, authenticationEntryPoint);
     }
 
     @Bean
@@ -50,12 +53,8 @@ public class SecurityConfig {
                 sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
             .exceptionHandling(ex -> ex
-                .authenticationEntryPoint((request, response, e) ->
-                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized")
-                )
-                .accessDeniedHandler((request, response, e) ->
-                    response.sendError(HttpServletResponse.SC_FORBIDDEN, "Forbidden")
-                )
+                .authenticationEntryPoint(authenticationEntryPoint)
+                .accessDeniedHandler(accessDeniedHandler)
             )
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
@@ -68,7 +67,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("*"));
+        config.setAllowedOriginPatterns(List.of("*"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type"));
         config.setAllowCredentials(true);

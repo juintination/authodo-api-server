@@ -13,6 +13,11 @@ public enum ErrorCode {
     NOT_FOUND(HttpStatus.NOT_FOUND, "error.common.not-found"),
     INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "error.common.internal-error"),
 
+    // SECURITY
+    TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "error.auth.token-expired"),
+    INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "error.auth.invalid-token"),
+    TOKEN_MISSING(HttpStatus.UNAUTHORIZED, "error.auth.token-missing"),
+
     // TODO 도메인
     TODO_NOT_FOUND(HttpStatus.NOT_FOUND, "error.todo.not-found"),
     TODO_TITLE_REQUIRED(HttpStatus.BAD_REQUEST, "error.todo.title-required"),

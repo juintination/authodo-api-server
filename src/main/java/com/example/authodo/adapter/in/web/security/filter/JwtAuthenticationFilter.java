@@ -1,5 +1,7 @@
 package com.example.authodo.adapter.in.web.security.filter;
 
+import com.example.authodo.adapter.in.web.security.exception.JwtAuthenticationException;
+import com.example.authodo.adapter.in.web.security.handler.JwtAuthenticationEntryPoint;
 import com.example.authodo.adapter.in.web.security.jwt.JwtTokenProvider;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -17,6 +19,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final String BEARER_PREFIX = "Bearer ";
 
     private final JwtTokenProvider tokenProvider;
+    private final JwtAuthenticationEntryPoint authenticationEntryPoint;
 
     @Override
     protected void doFilterInternal(
@@ -26,19 +29,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
         String token = resolveToken(request);
 
-        if (token != null && !tokenProvider.validate(token)) {
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid or expired token");
-            return;
-        }
-
         try {
             if (token != null) {
                 Authentication auth = tokenProvider.getAuthentication(token);
                 SecurityContextHolder.getContext().setAuthentication(auth);
             }
             filterChain.doFilter(request, response);
-        } finally {
+
+        } catch (JwtAuthenticationException e) {
             SecurityContextHolder.clearContext();
+            authenticationEntryPoint.commence(request, response, e);
         }
     }
 

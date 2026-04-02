@@ -1,5 +1,7 @@
 package com.example.authodo.adapter.in.web.security.jwt;
 
+import com.example.authodo.adapter.in.web.security.exception.JwtAuthenticationException;
+import com.example.authodo.common.error.ErrorCode;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtBuilder;
@@ -18,7 +20,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 
 @Log4j2
 @Component
@@ -87,28 +88,18 @@ public class JwtTokenProvider {
         return new UsernamePasswordAuthenticationToken(userDetails, token, authorities);
     }
 
-    public boolean validate(String token) {
-        if (!StringUtils.hasText(token)) {
-            return false;
-        }
+    public Claims parseClaims(String token) {
         try {
-            parseClaims(token);
-            return true;
-        } catch (ExpiredJwtException e) {
-            log.warn("JWT expired: {}", e.getMessage());
-        } catch (JwtException e) {
-            log.warn("JWT invalid: {}", e.getMessage());
-        } catch (Exception e) {
-            log.warn("JWT validation failed: {}", e.getMessage());
-        }
-        return false;
-    }
+            return Jwts.parser()
+                .verifyWith(key)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
 
-    private Claims parseClaims(String token) {
-        return Jwts.parser()
-            .verifyWith(key)
-            .build()
-            .parseSignedClaims(token)
-            .getPayload();
+        } catch (ExpiredJwtException e) {
+            throw new JwtAuthenticationException(ErrorCode.TOKEN_EXPIRED, e);
+        } catch (JwtException e) {
+            throw new JwtAuthenticationException(ErrorCode.INVALID_TOKEN, e);
+        }
     }
 }
