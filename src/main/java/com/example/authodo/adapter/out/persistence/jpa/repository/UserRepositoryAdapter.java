@@ -2,7 +2,7 @@ package com.example.authodo.adapter.out.persistence.jpa.repository;
 
 import com.example.authodo.adapter.out.persistence.jpa.entity.UserJpaEntity;
 import com.example.authodo.domain.user.User;
-import com.example.authodo.domain.user.out.UserRepositoryPort;
+import com.example.authodo.domain.user.port.out.UserRepositoryPort;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

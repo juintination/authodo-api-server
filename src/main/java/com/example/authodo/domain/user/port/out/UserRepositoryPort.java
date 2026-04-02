@@ -1,4 +1,4 @@
-package com.example.authodo.domain.user.out;
+package com.example.authodo.domain.user.port.out;
 
 import com.example.authodo.domain.user.User;
 import java.util.Optional;

@@ -4,7 +4,7 @@ import com.example.authodo.adapter.in.web.common.error.ErrorCode;
 import com.example.authodo.adapter.in.web.common.exception.BusinessException;
 import com.example.authodo.domain.auth.port.in.AuthUseCasePort;
 import com.example.authodo.domain.user.User;
-import com.example.authodo.domain.user.out.UserRepositoryPort;
+import com.example.authodo.domain.user.port.out.UserRepositoryPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

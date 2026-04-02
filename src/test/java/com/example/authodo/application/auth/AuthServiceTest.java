@@ -9,7 +9,7 @@ import static org.mockito.BDDMockito.verify;
 import com.example.authodo.adapter.in.web.common.error.ErrorCode;
 import com.example.authodo.adapter.in.web.common.exception.BusinessException;
 import com.example.authodo.domain.user.User;
-import com.example.authodo.domain.user.out.UserRepositoryPort;
+import com.example.authodo.domain.user.port.out.UserRepositoryPort;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
