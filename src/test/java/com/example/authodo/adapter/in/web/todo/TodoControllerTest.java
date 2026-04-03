@@ -9,6 +9,7 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.requestF
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
+import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -94,24 +95,37 @@ class TodoControllerTest {
     @Test
     @DisplayName("GET /api/todos - 목록 조회")
     void getAll_success() throws Exception {
-        createTodoAndReturnId();
-        createTodoAndReturnId();
+        int todoCount = 2;
+        for (int i = 0; i < todoCount; i++) {
+            createTodoAndReturnId();
+        }
 
-        mockMvc.perform(RestDocumentationRequestBuilders.get("/api/todos"))
+        mockMvc.perform(RestDocumentationRequestBuilders.get("/api/todos")
+                .param("page", "1")
+                .param("size", Long.toString(todoCount))
+            )
             .andExpect(status().isOk())
             .andDo(document("todo-getAll",
                 preprocessResponse(prettyPrint()),
+                queryParameters(
+                    parameterWithName("page").description("페이지 번호"),
+                    parameterWithName("size").description("페이지 크기"),
+                    parameterWithName("status").optional().description("상태 필터 (PENDING / IN_PROGRESS / COMPLETED)")
+                ),
                 responseFields(
                     fieldWithPath("success").type(JsonFieldType.BOOLEAN).description("성공 여부"),
-                    fieldWithPath("data[].id").type(JsonFieldType.NUMBER).description("ID"),
-                    fieldWithPath("data[].title").type(JsonFieldType.STRING).description("제목"),
-                    fieldWithPath("data[].content").type(JsonFieldType.STRING).optional().description("내용"),
-                    fieldWithPath("data[].status").type(JsonFieldType.STRING).description("상태"),
-                    fieldWithPath("data[].completed").type(JsonFieldType.BOOLEAN).description("완료 여부"),
-                    fieldWithPath("data[].createdAt").type(JsonFieldType.STRING).optional()
+                    fieldWithPath("data.items[].id").type(JsonFieldType.NUMBER).description("ID"),
+                    fieldWithPath("data.items[].title").type(JsonFieldType.STRING).description("제목"),
+                    fieldWithPath("data.items[].content").type(JsonFieldType.STRING).optional().description("내용"),
+                    fieldWithPath("data.items[].status").type(JsonFieldType.STRING).description("상태"),
+                    fieldWithPath("data.items[].completed").type(JsonFieldType.BOOLEAN).description("완료 여부"),
+                    fieldWithPath("data.items[].createdAt").type(JsonFieldType.STRING).optional()
                         .description("생성시각 (ISO-8601)"),
-                    fieldWithPath("data[].modifiedAt").type(JsonFieldType.STRING).optional()
+                    fieldWithPath("data.items[].modifiedAt").type(JsonFieldType.STRING).optional()
                         .description("수정시각 (ISO-8601)"),
+                    fieldWithPath("data.page").type(JsonFieldType.NUMBER).description("현재 페이지"),
+                    fieldWithPath("data.size").type(JsonFieldType.NUMBER).description("페이지 크기"),
+                    fieldWithPath("data.totalCount").type(JsonFieldType.NUMBER).description("전체 데이터 수"),
                     fieldWithPath("message").type(JsonFieldType.STRING).optional().description("결과 메시지")
                 )
             ));
