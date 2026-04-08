@@ -12,6 +12,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.example.authodo.adapter.in.web.auth.dto.AuthDtos.LoginRequest;
+import com.example.authodo.adapter.in.web.auth.dto.AuthDtos.RefreshTokenRequest;
 import com.example.authodo.adapter.in.web.auth.dto.AuthDtos.SignupRequest;
 import com.example.authodo.config.WebRestDocsTest;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -106,6 +107,36 @@ class AuthControllerTest {
             ));
     }
 
+    @Test
+    @DisplayName("POST /api/auth/refresh - 토큰 재발급")
+    void refresh_success() throws Exception {
+        signupTestUser();
+
+        String refreshToken = loginAndReturnRefreshToken();
+
+        RefreshTokenRequest req = new RefreshTokenRequest(refreshToken);
+
+        mockMvc.perform(post("/api/auth/refresh")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(req)))
+            .andExpect(status().isOk())
+            .andDo(document("auth-refresh",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                requestFields(
+                    fieldWithPath("refreshToken")
+                        .type(JsonFieldType.STRING)
+                        .description("리프레시 토큰")
+                ),
+                responseFields(
+                    fieldWithPath("success").type(JsonFieldType.BOOLEAN).description("성공 여부"),
+                    fieldWithPath("data.accessToken").type(JsonFieldType.STRING).description("새 액세스 토큰"),
+                    fieldWithPath("data.refreshToken").type(JsonFieldType.STRING).description("새 리프레시 토큰"),
+                    fieldWithPath("message").type(JsonFieldType.STRING).optional().description("결과 메시지")
+                )
+            ));
+    }
+
     private void signupTestUser() throws Exception {
         SignupRequest request = new SignupRequest("test@email.com", "password123", "nickname");
 
@@ -127,5 +158,19 @@ class AuthControllerTest {
             .getContentAsString();
 
         return objectMapper.readTree(response).get("data").get("accessToken").asText();
+    }
+
+    private String loginAndReturnRefreshToken() throws Exception {
+        LoginRequest request = new LoginRequest("test@email.com", "password123");
+
+        String response = mockMvc.perform(post("/api/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+        return objectMapper.readTree(response).get("data").get("refreshToken").asText();
     }
 }

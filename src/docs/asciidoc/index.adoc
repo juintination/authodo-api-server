@@ -78,3 +78,11 @@ include::{snippets}/auth-login/response-fields.adoc[]
 include::{snippets}/auth-me/http-request.adoc[]
 include::{snippets}/auth-me/http-response.adoc[]
 include::{snippets}/auth-me/response-fields.adoc[]
+
+---
+
+=== 토큰 재발급 (POST /api/auth/refresh)
+
+include::{snippets}/auth-refresh/http-request.adoc[]
+include::{snippets}/auth-refresh/http-response.adoc[]
+include::{snippets}/auth-refresh/request-fields.adoc[]
