@@ -36,9 +36,11 @@ public class TodoJpaEntity extends TimeStampedEntity {
     @Column(columnDefinition = "TEXT")
     private String content;
 
+    @Builder.Default
     @Column(nullable = false, length = 20)
     private TodoStatus status = TodoStatus.PENDING;
 
+    @Builder.Default
     @Column(name = "is_completed", nullable = false)
     private boolean completed = false;
 
