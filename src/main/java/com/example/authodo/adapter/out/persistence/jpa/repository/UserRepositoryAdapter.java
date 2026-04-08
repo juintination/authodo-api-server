@@ -19,6 +19,7 @@ public class UserRepositoryAdapter implements UserRepositoryPort {
             .email(user.getEmail())
             .password(user.getPassword())
             .nickname(user.getNickname())
+            .roles(user.getRoles())
             .build();
     }
 
@@ -28,6 +29,7 @@ public class UserRepositoryAdapter implements UserRepositoryPort {
             .email(userJpaEntity.getEmail())
             .password(userJpaEntity.getPassword())
             .nickname(userJpaEntity.getNickname())
+            .roles(userJpaEntity.getRoles())
             .createdAt(userJpaEntity.getCreatedAt())
             .modifiedAt(userJpaEntity.getModifiedAt())
             .build();

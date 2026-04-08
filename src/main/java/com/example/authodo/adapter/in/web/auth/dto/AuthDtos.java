@@ -1,6 +1,7 @@
 package com.example.authodo.adapter.in.web.auth.dto;
 
 import com.example.authodo.application.auth.dto.command.LoginCommand;
+import com.example.authodo.application.auth.dto.command.RefreshTokenCommand;
 import com.example.authodo.application.auth.dto.command.SignupCommand;
 import com.example.authodo.application.auth.dto.result.TokenResult;
 import com.example.authodo.domain.user.User;
@@ -40,6 +41,16 @@ public class AuthDtos {
 
         public LoginCommand toCommand() {
             return new LoginCommand(this.email, this.password);
+        }
+    }
+
+    public record RefreshTokenRequest(
+        @NotBlank(message = "{error.common.invalid-argument}")
+        String refreshToken
+    ) {
+
+        public RefreshTokenCommand toCommand() {
+            return new RefreshTokenCommand(this.refreshToken);
         }
     }
 

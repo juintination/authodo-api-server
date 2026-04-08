@@ -28,7 +28,8 @@ public enum ErrorCode {
     AUTH_USER_NOT_FOUND_EMAIL(HttpStatus.NOT_FOUND, "error.auth.user-not-found-email"),
     AUTH_INVALID_PASSWORD(HttpStatus.BAD_REQUEST, "error.auth.invalid-password"),
     AUTH_EMAIL_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "error.auth.email-exists"),
-    AUTH_NICKNAME_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "error.auth.nickname-exists");
+    AUTH_NICKNAME_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "error.auth.nickname-exists"),
+    AUTH_INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "error.auth.invalid-refresh-token");
 
     private final HttpStatus httpStatus;
     private final String messageKey;

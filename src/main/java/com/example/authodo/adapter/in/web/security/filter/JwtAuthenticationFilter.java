@@ -17,9 +17,31 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private static final String BEARER_PREFIX = "Bearer ";
+    private static final String[] publicEndpoints = {
+        "/docs/**",
+        "/api/auth/login",
+        "/api/auth/signup",
+        "/api/auth/refresh"
+    };
 
     private final JwtTokenProvider tokenProvider;
     private final JwtAuthenticationEntryPoint authenticationEntryPoint;
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+
+        if (request.getMethod().equals("OPTIONS")) {
+            return true;
+        }
+
+        String path = request.getRequestURI();
+        for (String pattern : publicEndpoints) {
+            if (path.startsWith(pattern.replace("/**", ""))) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     @Override
     protected void doFilterInternal(

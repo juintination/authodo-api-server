@@ -77,7 +77,8 @@ public class JwtTokenProvider {
         List<SimpleGrantedAuthority> authorities = rawRoles == null
             ? List.of()
             : rawRoles.stream()
-                .map(role -> new SimpleGrantedAuthority(role.toString()))
+                .map(role -> "ROLE_" + role.toString())
+                .map(SimpleGrantedAuthority::new)
                 .toList();
 
         UserDetails userDetails = User.withUsername(String.valueOf(userId))
@@ -101,5 +102,14 @@ public class JwtTokenProvider {
         } catch (JwtException e) {
             throw new JwtAuthenticationException(ErrorCode.INVALID_TOKEN, e);
         }
+    }
+
+    public Long getUserId(String token) {
+        Claims claims = parseClaims(token);
+        return Long.valueOf(claims.getSubject());
+    }
+
+    public long getRefreshExpirationMs() {
+        return refreshExpirationMs;
     }
 }

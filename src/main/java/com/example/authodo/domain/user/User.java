@@ -1,6 +1,8 @@
 package com.example.authodo.domain.user;
 
+import com.example.authodo.domain.user.enums.UserRole;
 import java.time.LocalDateTime;
+import java.util.Set;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,6 +23,8 @@ public class User {
 
     private final String nickname;
 
+    private final Set<UserRole> roles;
+
     private final LocalDateTime createdAt;
 
     private final LocalDateTime modifiedAt;
@@ -31,6 +35,7 @@ public class User {
             .email(email)
             .password(password)
             .nickname(nickname)
+            .roles(Set.of(UserRole.USER))
             .build();
     }
 }

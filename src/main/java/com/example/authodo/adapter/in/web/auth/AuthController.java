@@ -1,6 +1,7 @@
 package com.example.authodo.adapter.in.web.auth;
 
 import com.example.authodo.adapter.in.web.auth.dto.AuthDtos.LoginRequest;
+import com.example.authodo.adapter.in.web.auth.dto.AuthDtos.RefreshTokenRequest;
 import com.example.authodo.adapter.in.web.auth.dto.AuthDtos.SignupRequest;
 import com.example.authodo.adapter.in.web.auth.dto.AuthDtos.TokenResponse;
 import com.example.authodo.adapter.in.web.auth.dto.AuthDtos.UserInfoResponse;
@@ -45,8 +46,17 @@ public class AuthController {
 
     @GetMapping("/me")
     public ApiResponse<UserInfoResponse> getMyInfo() {
-        Long userId = securityUtil.getCurrentUserId();
-        User user = authUseCasePort.getById(userId);
+        User user = authUseCasePort.getById(securityUtil.getCurrentUserId());
+
         return ApiResponse.success(UserInfoResponse.from(user));
+    }
+
+    @PostMapping("/refresh")
+    public ApiResponse<TokenResponse> refresh(
+        @RequestBody RefreshTokenRequest request
+    ) {
+        TokenResult result = authUseCasePort.refresh(request.toCommand());
+
+        return ApiResponse.success(TokenResponse.from(result));
     }
 }

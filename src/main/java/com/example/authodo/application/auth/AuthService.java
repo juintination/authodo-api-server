@@ -2,14 +2,15 @@ package com.example.authodo.application.auth;
 
 import com.example.authodo.adapter.in.web.common.error.ErrorCode;
 import com.example.authodo.adapter.in.web.common.exception.BusinessException;
-import com.example.authodo.adapter.in.web.security.jwt.JwtTokenProvider;
 import com.example.authodo.application.auth.dto.command.LoginCommand;
+import com.example.authodo.application.auth.dto.command.RefreshTokenCommand;
 import com.example.authodo.application.auth.dto.command.SignupCommand;
 import com.example.authodo.application.auth.dto.result.TokenResult;
 import com.example.authodo.domain.auth.port.in.AuthUseCasePort;
 import com.example.authodo.domain.user.User;
+import com.example.authodo.domain.user.enums.UserRole;
 import com.example.authodo.domain.user.port.out.UserRepositoryPort;
-import java.util.List;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -22,7 +23,7 @@ public class AuthService implements AuthUseCasePort {
 
     private final UserRepositoryPort userRepositoryPort;
     private final PasswordEncoder passwordEncoder;
-    private final JwtTokenProvider jwtTokenProvider;
+    private final TokenService tokenService;
 
     @Override
     @Transactional
@@ -43,10 +44,7 @@ public class AuthService implements AuthUseCasePort {
             User.create(email, encoded, nickname)
         );
 
-        String accessToken = jwtTokenProvider.createAccessToken(user.getId(), List.of());
-        String refreshToken = jwtTokenProvider.createRefreshToken(user.getId());
-
-        return new TokenResult(accessToken, refreshToken);
+        return tokenService.issue(user.getId(), user.getRoles());
     }
 
     @Override
@@ -63,10 +61,21 @@ public class AuthService implements AuthUseCasePort {
             throw new BusinessException(ErrorCode.AUTH_INVALID_PASSWORD);
         }
 
-        String accessToken = jwtTokenProvider.createAccessToken(user.getId(), List.of());
-        String refreshToken = jwtTokenProvider.createRefreshToken(user.getId());
+        return tokenService.issue(user.getId(), user.getRoles());
+    }
 
-        return new TokenResult(accessToken, refreshToken);
+    @Override
+    public TokenResult refresh(RefreshTokenCommand command) {
+        String refreshToken = command.refreshToken();
+
+        Long userId = tokenService.extractUserIdFromRefreshToken(refreshToken);
+
+        User user = userRepositoryPort.findById(userId)
+            .orElseThrow(() -> new BusinessException(ErrorCode.AUTH_USER_NOT_FOUND_ID, userId));
+
+        Set<UserRole> roles = user.getRoles();
+
+        return tokenService.refresh(userId, roles, refreshToken);
     }
 
     @Override
