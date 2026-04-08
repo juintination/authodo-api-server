@@ -5,12 +5,11 @@ import com.example.authodo.adapter.in.web.auth.dto.AuthDtos.SignupRequest;
 import com.example.authodo.adapter.in.web.auth.dto.AuthDtos.TokenResponse;
 import com.example.authodo.adapter.in.web.auth.dto.AuthDtos.UserInfoResponse;
 import com.example.authodo.adapter.in.web.common.response.ApiResponse;
-import com.example.authodo.adapter.in.web.security.jwt.JwtTokenProvider;
 import com.example.authodo.adapter.in.web.security.util.SecurityUtil;
+import com.example.authodo.application.auth.dto.result.TokenResult;
 import com.example.authodo.domain.auth.port.in.AuthUseCasePort;
 import com.example.authodo.domain.user.User;
 import jakarta.validation.Valid;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,38 +23,24 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final AuthUseCasePort authUseCasePort;
-    private final JwtTokenProvider jwtTokenProvider;
     private final SecurityUtil securityUtil;
 
     @PostMapping("/signup")
     public ApiResponse<TokenResponse> signup(
         @Valid @RequestBody SignupRequest request
     ) {
-        User user = authUseCasePort.signup(
-            request.email(),
-            request.password(),
-            request.nickname()
-        );
+        TokenResult result = authUseCasePort.signup(request.toCommand());
 
-        String accessToken = jwtTokenProvider.createAccessToken(user.getId(), List.of());
-        String refreshToken = jwtTokenProvider.createRefreshToken(user.getId());
-
-        return ApiResponse.success(TokenResponse.of(accessToken, refreshToken));
+        return ApiResponse.success(TokenResponse.from(result));
     }
 
     @PostMapping("/login")
     public ApiResponse<TokenResponse> login(
         @Valid @RequestBody LoginRequest request
     ) {
-        User user = authUseCasePort.login(
-            request.email(),
-            request.password()
-        );
+        TokenResult result = authUseCasePort.login(request.toCommand());
 
-        String accessToken = jwtTokenProvider.createAccessToken(user.getId(), List.of());
-        String refreshToken = jwtTokenProvider.createRefreshToken(user.getId());
-
-        return ApiResponse.success(TokenResponse.of(accessToken, refreshToken));
+        return ApiResponse.success(TokenResponse.from(result));
     }
 
     @GetMapping("/me")

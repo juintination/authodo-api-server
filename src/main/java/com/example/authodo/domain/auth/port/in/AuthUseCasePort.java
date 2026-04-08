@@ -1,12 +1,15 @@
 package com.example.authodo.domain.auth.port.in;
 
+import com.example.authodo.application.auth.dto.command.LoginCommand;
+import com.example.authodo.application.auth.dto.command.SignupCommand;
+import com.example.authodo.application.auth.dto.result.TokenResult;
 import com.example.authodo.domain.user.User;
 
 public interface AuthUseCasePort {
 
-    User signup(String email, String password, String nickname);
+    TokenResult signup(SignupCommand command);
 
-    User login(String email, String password);
+    TokenResult login(LoginCommand command);
 
     User getById(Long id);
 }

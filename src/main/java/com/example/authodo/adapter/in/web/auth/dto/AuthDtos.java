@@ -1,5 +1,8 @@
 package com.example.authodo.adapter.in.web.auth.dto;
 
+import com.example.authodo.application.auth.dto.command.LoginCommand;
+import com.example.authodo.application.auth.dto.command.SignupCommand;
+import com.example.authodo.application.auth.dto.result.TokenResult;
 import com.example.authodo.domain.user.User;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -21,6 +24,9 @@ public class AuthDtos {
         String nickname
     ) {
 
+        public SignupCommand toCommand() {
+            return new SignupCommand(this.email, this.password, this.nickname);
+        }
     }
 
     public record LoginRequest(
@@ -32,6 +38,9 @@ public class AuthDtos {
         String password
     ) {
 
+        public LoginCommand toCommand() {
+            return new LoginCommand(this.email, this.password);
+        }
     }
 
     @Builder
@@ -40,10 +49,10 @@ public class AuthDtos {
         String refreshToken
     ) {
 
-        public static TokenResponse of(String accessToken, String refreshToken) {
+        public static TokenResponse from(TokenResult result) {
             return TokenResponse.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
+                .accessToken(result.accessToken())
+                .refreshToken(result.refreshToken())
                 .build();
         }
     }
