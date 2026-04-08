@@ -8,8 +8,13 @@ import static org.mockito.BDDMockito.verify;
 
 import com.example.authodo.adapter.in.web.common.error.ErrorCode;
 import com.example.authodo.adapter.in.web.common.exception.BusinessException;
+import com.example.authodo.adapter.in.web.security.jwt.JwtTokenProvider;
+import com.example.authodo.application.auth.dto.command.LoginCommand;
+import com.example.authodo.application.auth.dto.command.SignupCommand;
+import com.example.authodo.application.auth.dto.result.TokenResult;
 import com.example.authodo.domain.user.User;
 import com.example.authodo.domain.user.port.out.UserRepositoryPort;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -29,6 +34,9 @@ class AuthServiceTest {
     @Mock
     private PasswordEncoder passwordEncoder;
 
+    @Mock
+    private JwtTokenProvider jwtTokenProvider;
+
     @InjectMocks
     private AuthService authService;
 
@@ -39,53 +47,65 @@ class AuthServiceTest {
     @Test
     @DisplayName("signup() - 이메일 중복 예외")
     void signup_emailExists() {
-        given(userRepositoryPort.existsByEmail("test@test.com")).willReturn(true);
+        SignupCommand command = new SignupCommand("test@test.com", "pw", "nick");
 
-        assertThatThrownBy(() -> authService.signup("test@test.com", "pw", "nick"))
+        given(userRepositoryPort.existsByEmail(command.email())).willReturn(true);
+
+        assertThatThrownBy(() -> authService.signup(command))
             .isInstanceOf(BusinessException.class)
             .hasMessageContaining(ErrorCode.AUTH_EMAIL_ALREADY_EXISTS.name());
 
-        verify(userRepositoryPort).existsByEmail("test@test.com");
+        verify(userRepositoryPort).existsByEmail(command.email());
     }
 
     @Test
     @DisplayName("signup() - 닉네임 중복 예외")
     void signup_nicknameExists() {
-        given(userRepositoryPort.existsByEmail("test@test.com")).willReturn(false);
-        given(userRepositoryPort.existsByNickname("nick")).willReturn(true);
+        SignupCommand command = new SignupCommand("test@test.com", "pw", "nick");
 
-        assertThatThrownBy(() -> authService.signup("test@test.com", "pw", "nick"))
+        given(userRepositoryPort.existsByEmail(command.email())).willReturn(false);
+        given(userRepositoryPort.existsByNickname(command.nickname())).willReturn(true);
+
+        assertThatThrownBy(() -> authService.signup(command))
             .isInstanceOf(BusinessException.class)
             .hasMessageContaining(ErrorCode.AUTH_NICKNAME_ALREADY_EXISTS.name());
 
-        verify(userRepositoryPort).existsByNickname("nick");
+        verify(userRepositoryPort).existsByNickname(command.nickname());
     }
 
     @Test
     @DisplayName("signup() - 정상 생성")
     void signup_success() {
-        given(userRepositoryPort.existsByEmail("test@test.com")).willReturn(false);
-        given(userRepositoryPort.existsByNickname("nick")).willReturn(false);
-        given(passwordEncoder.encode("pw")).willReturn("encodedPw");
+        SignupCommand command = new SignupCommand("test@test.com", "pw", "nick");
 
-        User savedUser = sampleUser(1L, "test@test.com", "encodedPw", "nick");
+        given(userRepositoryPort.existsByEmail(command.email())).willReturn(false);
+        given(userRepositoryPort.existsByNickname(command.nickname())).willReturn(false);
+        given(passwordEncoder.encode(command.password())).willReturn("encodedPw");
+
+        User savedUser = sampleUser(1L, command.email(), "encodedPw", command.nickname());
         given(userRepositoryPort.save(any(User.class))).willReturn(savedUser);
 
-        User result = authService.signup("test@test.com", "pw", "nick");
+        given(jwtTokenProvider.createAccessToken(1L, List.of()))
+            .willReturn("access-token");
+        given(jwtTokenProvider.createRefreshToken(1L))
+            .willReturn("refresh-token");
 
-        assertThat(result.getId()).isEqualTo(1L);
-        assertThat(result.getEmail()).isEqualTo("test@test.com");
-        assertThat(result.getPassword()).isEqualTo("encodedPw");
-        assertThat(result.getNickname()).isEqualTo("nick");
+        TokenResult result = authService.signup(command);
+
+        assertThat(result.accessToken()).isEqualTo("access-token");
+        assertThat(result.refreshToken()).isEqualTo("refresh-token");
+
         verify(userRepositoryPort).save(any(User.class));
     }
 
     @Test
     @DisplayName("login() - 이메일 없음 예외")
     void login_emailNotFound() {
-        given(userRepositoryPort.findByEmail("test@test.com")).willReturn(Optional.empty());
+        LoginCommand command = new LoginCommand("test@test.com", "pw");
 
-        assertThatThrownBy(() -> authService.login("test@test.com", "pw"))
+        given(userRepositoryPort.findByEmail(command.email())).willReturn(Optional.empty());
+
+        assertThatThrownBy(() -> authService.login(command))
             .isInstanceOf(BusinessException.class)
             .hasMessageContaining(ErrorCode.AUTH_USER_NOT_FOUND_EMAIL.name());
     }
@@ -93,11 +113,16 @@ class AuthServiceTest {
     @Test
     @DisplayName("login() - 비밀번호 불일치 예외")
     void login_invalidPassword() {
-        User user = sampleUser(1L, "test@test.com", "encodedPw", "nick");
-        given(userRepositoryPort.findByEmail("test@test.com")).willReturn(Optional.of(user));
-        given(passwordEncoder.matches("pw", "encodedPw")).willReturn(false);
+        LoginCommand command = new LoginCommand("test@test.com", "pw");
 
-        assertThatThrownBy(() -> authService.login("test@test.com", "pw"))
+        User user = sampleUser(1L, command.email(), "encodedPw", "nick");
+
+        given(userRepositoryPort.findByEmail(command.email()))
+            .willReturn(Optional.of(user));
+        given(passwordEncoder.matches(command.password(), user.getPassword()))
+            .willReturn(false);
+
+        assertThatThrownBy(() -> authService.login(command))
             .isInstanceOf(BusinessException.class)
             .hasMessageContaining(ErrorCode.AUTH_INVALID_PASSWORD.name());
     }
@@ -105,13 +130,24 @@ class AuthServiceTest {
     @Test
     @DisplayName("login() - 정상 로그인")
     void login_success() {
-        User user = sampleUser(1L, "test@test.com", "encodedPw", "nick");
-        given(userRepositoryPort.findByEmail("test@test.com")).willReturn(Optional.of(user));
-        given(passwordEncoder.matches("pw", "encodedPw")).willReturn(true);
+        LoginCommand command = new LoginCommand("test@test.com", "pw");
 
-        User result = authService.login("test@test.com", "pw");
+        User user = sampleUser(1L, command.email(), "encodedPw", "nick");
 
-        assertThat(result).isEqualTo(user);
+        given(userRepositoryPort.findByEmail(command.email()))
+            .willReturn(Optional.of(user));
+        given(passwordEncoder.matches(command.password(), user.getPassword()))
+            .willReturn(true);
+
+        given(jwtTokenProvider.createAccessToken(1L, List.of()))
+            .willReturn("access-token");
+        given(jwtTokenProvider.createRefreshToken(1L))
+            .willReturn("refresh-token");
+
+        TokenResult result = authService.login(command);
+
+        assertThat(result.accessToken()).isEqualTo("access-token");
+        assertThat(result.refreshToken()).isEqualTo("refresh-token");
     }
 
     @Test
@@ -128,6 +164,7 @@ class AuthServiceTest {
     @DisplayName("getById() - 정상 반환")
     void getById_success() {
         User user = sampleUser(1L, "test@test.com", "encodedPw", "nick");
+
         given(userRepositoryPort.findById(1L)).willReturn(Optional.of(user));
 
         User result = authService.getById(1L);
