@@ -126,6 +126,7 @@ class TodoControllerTest {
                     fieldWithPath("data.page").type(JsonFieldType.NUMBER).description("현재 페이지"),
                     fieldWithPath("data.size").type(JsonFieldType.NUMBER).description("페이지 크기"),
                     fieldWithPath("data.totalCount").type(JsonFieldType.NUMBER).description("전체 데이터 수"),
+                    fieldWithPath("data.totalPages").type(JsonFieldType.NUMBER).description("전체 페이지 수"),
                     fieldWithPath("message").type(JsonFieldType.STRING).optional().description("결과 메시지")
                 )
             ));

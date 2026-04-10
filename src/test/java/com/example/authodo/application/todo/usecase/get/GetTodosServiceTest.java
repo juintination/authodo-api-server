@@ -3,6 +3,8 @@ package com.example.authodo.application.todo.usecase.get;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.verify;
 
+import com.example.authodo.application.common.pagination.PageQuery;
+import com.example.authodo.application.todo.dto.filter.TodoFilter;
 import com.example.authodo.application.todo.dto.query.GetTodosQuery;
 import com.example.authodo.domain.todo.Todo;
 import com.example.authodo.domain.todo.enums.TodoStatus;
@@ -36,7 +38,12 @@ class GetTodosServiceTest {
         given(todoRepositoryPort.findAllByUserIdPaged(1L, 1, 20)).willReturn(todos);
         given(todoRepositoryPort.countByUserId(1L)).willReturn(2L);
 
-        GetTodosQuery query = new GetTodosQuery(1, 20, null);
+        PageQuery<TodoFilter> pageQuery = new PageQuery<>(
+            1,
+            20,
+            new TodoFilter(null)
+        );
+        GetTodosQuery query = new GetTodosQuery(pageQuery);
 
         getTodosService.getTodos(1L, query);
 
@@ -56,7 +63,12 @@ class GetTodosServiceTest {
         given(todoRepositoryPort.countByUserIdAndStatus(1L, TodoStatus.COMPLETED))
             .willReturn(1L);
 
-        GetTodosQuery query = new GetTodosQuery(1, 20, TodoStatus.COMPLETED);
+        PageQuery<TodoFilter> pageQuery = new PageQuery<>(
+            1,
+            20,
+            new TodoFilter(TodoStatus.COMPLETED)
+        );
+        GetTodosQuery query = new GetTodosQuery(pageQuery);
 
         getTodosService.getTodos(1L, query);
 
