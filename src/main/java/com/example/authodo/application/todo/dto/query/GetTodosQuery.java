@@ -1,11 +1,10 @@
 package com.example.authodo.application.todo.dto.query;
 
-import com.example.authodo.domain.todo.enums.TodoStatus;
+import com.example.authodo.application.common.pagination.PageQuery;
+import com.example.authodo.application.todo.dto.filter.TodoFilter;
 
 public record GetTodosQuery(
-    int page,
-    int size,
-    TodoStatus status
+    PageQuery<TodoFilter> pageQuery
 ) {
 
 }

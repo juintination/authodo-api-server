@@ -1,13 +1,13 @@
 package com.example.authodo.adapter.in.web.todo;
 
 import com.example.authodo.adapter.in.web.common.response.ApiResponse;
+import com.example.authodo.adapter.in.web.common.response.PageResponse;
 import com.example.authodo.adapter.in.web.security.util.SecurityUtil;
 import com.example.authodo.adapter.in.web.todo.dto.TodoDtos.GetTodosRequest;
 import com.example.authodo.adapter.in.web.todo.dto.TodoDtos.TodoCreateRequest;
-import com.example.authodo.adapter.in.web.todo.dto.TodoDtos.TodoPageResponse;
 import com.example.authodo.adapter.in.web.todo.dto.TodoDtos.TodoResponse;
 import com.example.authodo.adapter.in.web.todo.dto.TodoDtos.TodoUpdateRequest;
-import com.example.authodo.application.todo.dto.result.GetTodosResult;
+import com.example.authodo.application.common.pagination.PageResult;
 import com.example.authodo.application.todo.usecase.create.CreateTodoUseCase;
 import com.example.authodo.application.todo.usecase.delete.DeleteTodoUseCase;
 import com.example.authodo.application.todo.usecase.get.GetTodoUseCase;
@@ -15,6 +15,7 @@ import com.example.authodo.application.todo.usecase.get.GetTodosUseCase;
 import com.example.authodo.application.todo.usecase.update.UpdateTodoUseCase;
 import com.example.authodo.domain.todo.Todo;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -56,12 +57,23 @@ public class TodoController {
     }
 
     @GetMapping
-    public ApiResponse<TodoPageResponse> getTodos(
+    public ApiResponse<PageResponse<TodoResponse>> getTodos(
         @Valid GetTodosRequest request
     ) {
-        GetTodosResult result = getTodosUseCase.getTodos(securityUtil.getCurrentUserId(), request.toQuery());
+        PageResult<Todo> result = getTodosUseCase.getTodos(securityUtil.getCurrentUserId(), request.toQuery());
 
-        return ApiResponse.success(TodoPageResponse.from(result));
+        List<TodoResponse> items = result.items().stream()
+            .map(TodoResponse::from)
+            .toList();
+
+        return ApiResponse.success(
+            PageResponse.of(
+                items,
+                request.page(),
+                request.size(),
+                result.totalCount()
+            )
+        );
     }
 
     @PutMapping("/{todoId}")
