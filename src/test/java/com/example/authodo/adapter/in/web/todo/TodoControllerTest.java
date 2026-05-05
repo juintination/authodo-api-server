@@ -10,14 +10,15 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.response
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
 import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.example.authodo.adapter.in.web.security.util.SecurityUtil;
 import com.example.authodo.adapter.in.web.todo.dto.TodoDtos.TodoCreateRequest;
 import com.example.authodo.adapter.in.web.todo.dto.TodoDtos.TodoUpdateRequest;
+import com.example.authodo.application.todo.dto.command.CreateTodoCommand;
+import com.example.authodo.application.todo.usecase.create.CreateTodoUseCase;
 import com.example.authodo.config.WebRestDocsTest;
 import com.example.authodo.domain.todo.enums.TodoStatus;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -38,6 +39,12 @@ class TodoControllerTest {
 
     @Autowired
     ObjectMapper objectMapper;
+
+    @Autowired
+    CreateTodoUseCase createTodoUseCase;
+
+    @Autowired
+    SecurityUtil securityUtil;
 
     @Test
     @DisplayName("POST /api/todos - 생성")
@@ -64,16 +71,16 @@ class TodoControllerTest {
     }
 
     @Test
-    @DisplayName("GET /api/todos/{id} - 조회")
+    @DisplayName("GET /api/todos/{todoId} - 조회")
     void getTodo_success() throws Exception {
         Long id = createTodoAndReturnId();
 
-        mockMvc.perform(RestDocumentationRequestBuilders.get("/api/todos/{id}", id))
+        mockMvc.perform(RestDocumentationRequestBuilders.get("/api/todos/{todoId}", id))
             .andExpect(status().isOk())
             .andDo(document("todo-get",
                 preprocessResponse(prettyPrint()),
                 pathParameters(
-                    parameterWithName("id").description("Todo ID")
+                    parameterWithName("todoId").description("Todo ID")
                 ),
                 responseFields(
                     fieldWithPath("success").type(JsonFieldType.BOOLEAN).description("성공 여부"),
@@ -133,20 +140,20 @@ class TodoControllerTest {
     }
 
     @Test
-    @DisplayName("PUT /api/todos/{id} - 수정")
+    @DisplayName("PUT /api/todos/{todoId} - 수정")
     void update_success() throws Exception {
         Long id = createTodoAndReturnId();
 
         TodoUpdateRequest req = new TodoUpdateRequest("수정된 제목", "수정된 내용", TodoStatus.COMPLETED);
 
-        mockMvc.perform(RestDocumentationRequestBuilders.put("/api/todos/{id}", id)
+        mockMvc.perform(RestDocumentationRequestBuilders.put("/api/todos/{todoId}", id)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(req)))
             .andExpect(status().isOk())
             .andDo(document("todo-update",
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
-                pathParameters(parameterWithName("id").description("수정할 Todo ID")),
+                pathParameters(parameterWithName("todoId").description("수정할 Todo ID")),
                 requestFields(
                     fieldWithPath("title").type(JsonFieldType.STRING).optional().description("새 제목"),
                     fieldWithPath("content").type(JsonFieldType.STRING).optional().description("새 내용"),
@@ -162,15 +169,15 @@ class TodoControllerTest {
     }
 
     @Test
-    @DisplayName("DELETE /api/todos/{id} - 삭제")
+    @DisplayName("DELETE /api/todos/{todoId} - 삭제")
     void delete_success() throws Exception {
         Long id = createTodoAndReturnId();
 
-        mockMvc.perform(RestDocumentationRequestBuilders.delete("/api/todos/{id}", id))
+        mockMvc.perform(RestDocumentationRequestBuilders.delete("/api/todos/{todoId}", id))
             .andExpect(status().isOk())
             .andDo(document("todo-delete",
                 preprocessResponse(prettyPrint()),
-                pathParameters(parameterWithName("id").description("삭제할 Todo ID")),
+                pathParameters(parameterWithName("todoId").description("삭제할 Todo ID")),
                 responseFields(
                     fieldWithPath("success").type(JsonFieldType.BOOLEAN).description("성공 여부"),
                     fieldWithPath("data").type(JsonFieldType.NULL).optional().description("반환 데이터 없음"),
@@ -179,18 +186,7 @@ class TodoControllerTest {
             ));
     }
 
-    private Long createTodoAndReturnId() throws Exception {
-        TodoCreateRequest request = new TodoCreateRequest("제목", "내용");
-
-        String response = mockMvc.perform(post("/api/todos")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().isOk())
-            .andReturn()
-            .getResponse()
-            .getContentAsString();
-
-        JsonNode json = objectMapper.readTree(response);
-        return json.get("data").asLong();
+    private Long createTodoAndReturnId() {
+        return createTodoUseCase.create(securityUtil.getCurrentUserId(), new CreateTodoCommand("제목", "내용")).getId();
     }
 }
