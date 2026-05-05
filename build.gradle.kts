@@ -26,6 +26,16 @@ repositories {
 }
 
 val snippetsDir = file("build/generated-snippets")
+val generatedAsciidocDir = layout.buildDirectory.dir("generated-asciidoc")
+
+val snippetIncludes = listOf(
+    "http-request",
+    "request-fields",
+    "path-parameters",
+    "query-parameters",
+    "http-response",
+    "response-fields"
+)
 
 dependencies {
     // Web & Validation
@@ -69,12 +79,66 @@ dependencies {
 tasks.withType<Test> {
     useJUnitPlatform()
     outputs.dir(snippetsDir)
+    finalizedBy("generateDocsIndex")
+}
+
+// 문서 전체 생성 진입점 (Gradle 창에서 이 태스크 하나만 실행하면 됨)
+val generateDocs by tasks.registering {
+    group = "documentation"
+    description = "테스트 실행 → index.adoc 생성 → HTML 변환 → static/docs 복사"
+    dependsOn("copyRestDocs")
+}
+
+// snippets 디렉터리를 스캔해 index.adoc 자동 생성
+val generateDocsIndex by tasks.registering {
+    dependsOn(tasks.test)
+    outputs.dir(generatedAsciidocDir)
     finalizedBy(tasks.asciidoctor)
+
+    doLast {
+        val outputDir = generatedAsciidocDir.get().asFile
+        outputDir.mkdirs()
+
+        val groups = (snippetsDir.listFiles() ?: emptyArray())
+            .filter { it.isDirectory }
+            .groupBy { it.name.substringBefore("-") }
+            .toSortedMap()
+
+        val content = buildString {
+            appendLine("= Authodo API 문서")
+            appendLine(":toc: left")
+            appendLine(":toclevels: 2")
+            appendLine(":sectnums:")
+            appendLine()
+
+            groups.forEach { (prefix, dirs) ->
+                appendLine("== ${prefix.replaceFirstChar { it.uppercase() }} API")
+                appendLine()
+
+                dirs.sortedBy { it.name }.forEach { dir ->
+                    appendLine("---")
+                    appendLine()
+                    appendLine("=== ${dir.name}")
+                    appendLine()
+
+                    snippetIncludes
+                        .filter { dir.resolve("$it.adoc").exists() }
+                        .forEach { snippet ->
+                            appendLine("include::{snippets}/${dir.name}/$snippet.adoc[]")
+                        }
+                    appendLine()
+                }
+            }
+        }
+
+        File(outputDir, "index.adoc").writeText(content)
+    }
 }
 
 // Asciidoctor HTML 생성
 tasks.asciidoctor {
-    dependsOn(tasks.test)
+    dependsOn(generateDocsIndex)
+    sourceDir(generatedAsciidocDir.get().asFile)
     inputs.dir(snippetsDir)
     attributes(mapOf("snippets" to snippetsDir))
     baseDirFollowsSourceDir()
