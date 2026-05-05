@@ -14,9 +14,9 @@ spring:
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://${db.host}:${db.port}/${db.name}?serverTimezone=${server.time.zone}&characterEncoding=${character.encoding}
-    username: ${db.username}
-    password: ${db.password}
+    url: jdbc:mysql://${DB_HOST}:${DB_PORT}/${DB_NAME}?serverTimezone=${SERVER_TIME_ZONE}&characterEncoding=${CHARACTER_ENCODING}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
 
   jpa:
     hibernate:
@@ -37,8 +37,8 @@ logging:
     org.hibernate.orm.jdbc.bind: trace
 
 jwt:
-  secret: ${jwt.secret}
+  secret: ${JWT_SECRET}
   access:
-    expiration-ms: ${jwt.access.expiration-ms}
+    expiration-ms: ${JWT_ACCESS_EXPIRATION_MS}
   refresh:
-    expiration-ms: ${jwt.refresh.expiration-ms}
+    expiration-ms: ${JWT_REFRESH_EXPIRATION_MS}
