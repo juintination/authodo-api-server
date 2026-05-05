@@ -14,16 +14,19 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.example.authodo.adapter.in.web.auth.dto.AuthDtos.LoginRequest;
 import com.example.authodo.adapter.in.web.auth.dto.AuthDtos.RefreshTokenRequest;
 import com.example.authodo.adapter.in.web.auth.dto.AuthDtos.SignupRequest;
+import com.example.authodo.config.RedisContainerConfig;
 import com.example.authodo.config.WebRestDocsTest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebRestDocsTest
+@Import(RedisContainerConfig.class)
 @DisplayName("AuthController 통합 테스트")
 class AuthControllerTest {
 
