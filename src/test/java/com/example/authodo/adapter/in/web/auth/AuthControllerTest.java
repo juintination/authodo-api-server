@@ -1,6 +1,7 @@
 package com.example.authodo.adapter.in.web.auth;
 
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static com.epages.restdocs.apispec.MockMvcRestDocumentationWrapper.document;
+import static com.epages.restdocs.apispec.ResourceDocumentation.resource;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
@@ -11,6 +12,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.epages.restdocs.apispec.ResourceSnippetParameters;
 import com.example.authodo.adapter.in.web.auth.dto.AuthDtos.LoginRequest;
 import com.example.authodo.adapter.in.web.auth.dto.AuthDtos.RefreshTokenRequest;
 import com.example.authodo.adapter.in.web.auth.dto.AuthDtos.SignupRequest;
@@ -22,6 +24,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.restdocs.payload.FieldDescriptor;
 import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -41,6 +44,18 @@ class AuthControllerTest {
     void signup_success() throws Exception {
         SignupRequest request = new SignupRequest("test@email.com", "password123", "nickname");
 
+        FieldDescriptor[] reqFields = {
+            fieldWithPath("email").type(JsonFieldType.STRING).description("회원 이메일"),
+            fieldWithPath("password").type(JsonFieldType.STRING).description("비밀번호"),
+            fieldWithPath("nickname").type(JsonFieldType.STRING).description("닉네임")
+        };
+        FieldDescriptor[] resFields = {
+            fieldWithPath("success").type(JsonFieldType.BOOLEAN).description("성공 여부"),
+            fieldWithPath("data.accessToken").type(JsonFieldType.STRING).description("액세스 토큰"),
+            fieldWithPath("data.refreshToken").type(JsonFieldType.STRING).description("리프레시 토큰"),
+            fieldWithPath("message").type(JsonFieldType.STRING).optional().description("결과 메시지")
+        };
+
         mockMvc.perform(post("/api/auth/signup")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
@@ -48,16 +63,14 @@ class AuthControllerTest {
             .andDo(document("auth-signup",
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
-                requestFields(
-                    fieldWithPath("email").type(JsonFieldType.STRING).description("회원 이메일"),
-                    fieldWithPath("password").type(JsonFieldType.STRING).description("비밀번호"),
-                    fieldWithPath("nickname").type(JsonFieldType.STRING).description("닉네임")
-                ),
-                responseFields(
-                    fieldWithPath("success").type(JsonFieldType.BOOLEAN).description("성공 여부"),
-                    fieldWithPath("data.accessToken").type(JsonFieldType.STRING).description("액세스 토큰"),
-                    fieldWithPath("data.refreshToken").type(JsonFieldType.STRING).description("리프레시 토큰"),
-                    fieldWithPath("message").type(JsonFieldType.STRING).optional().description("결과 메시지")
+                requestFields(reqFields),
+                responseFields(resFields),
+                resource(ResourceSnippetParameters.builder()
+                    .tag("Auth")
+                    .summary("회원가입")
+                    .requestFields(reqFields)
+                    .responseFields(resFields)
+                    .build()
                 )
             ));
     }
@@ -69,6 +82,17 @@ class AuthControllerTest {
 
         LoginRequest request = new LoginRequest("test@email.com", "password123");
 
+        FieldDescriptor[] reqFields = {
+            fieldWithPath("email").type(JsonFieldType.STRING).description("회원 이메일"),
+            fieldWithPath("password").type(JsonFieldType.STRING).description("비밀번호")
+        };
+        FieldDescriptor[] resFields = {
+            fieldWithPath("success").type(JsonFieldType.BOOLEAN).description("성공 여부"),
+            fieldWithPath("data.accessToken").type(JsonFieldType.STRING).description("액세스 토큰"),
+            fieldWithPath("data.refreshToken").type(JsonFieldType.STRING).description("리프레시 토큰"),
+            fieldWithPath("message").type(JsonFieldType.STRING).optional().description("결과 메시지")
+        };
+
         mockMvc.perform(post("/api/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
@@ -76,15 +100,14 @@ class AuthControllerTest {
             .andDo(document("auth-login",
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
-                requestFields(
-                    fieldWithPath("email").type(JsonFieldType.STRING).description("회원 이메일"),
-                    fieldWithPath("password").type(JsonFieldType.STRING).description("비밀번호")
-                ),
-                responseFields(
-                    fieldWithPath("success").type(JsonFieldType.BOOLEAN).description("성공 여부"),
-                    fieldWithPath("data.accessToken").type(JsonFieldType.STRING).description("액세스 토큰"),
-                    fieldWithPath("data.refreshToken").type(JsonFieldType.STRING).description("리프레시 토큰"),
-                    fieldWithPath("message").type(JsonFieldType.STRING).optional().description("결과 메시지")
+                requestFields(reqFields),
+                responseFields(resFields),
+                resource(ResourceSnippetParameters.builder()
+                    .tag("Auth")
+                    .summary("로그인")
+                    .requestFields(reqFields)
+                    .responseFields(resFields)
+                    .build()
                 )
             ));
     }
@@ -95,17 +118,25 @@ class AuthControllerTest {
         signupTestUser();
         String token = loginAndReturnAccessToken();
 
+        FieldDescriptor[] resFields = {
+            fieldWithPath("success").type(JsonFieldType.BOOLEAN).description("성공 여부"),
+            fieldWithPath("data.id").type(JsonFieldType.NUMBER).description("회원 ID"),
+            fieldWithPath("data.email").type(JsonFieldType.STRING).description("회원 이메일"),
+            fieldWithPath("data.nickname").type(JsonFieldType.STRING).description("회원 닉네임"),
+            fieldWithPath("message").type(JsonFieldType.STRING).optional().description("결과 메시지")
+        };
+
         mockMvc.perform(get("/api/auth/me")
                 .header("Authorization", "Bearer " + token))
             .andExpect(status().isOk())
             .andDo(document("auth-me",
                 preprocessResponse(prettyPrint()),
-                responseFields(
-                    fieldWithPath("success").type(JsonFieldType.BOOLEAN).description("성공 여부"),
-                    fieldWithPath("data.id").type(JsonFieldType.NUMBER).description("회원 ID"),
-                    fieldWithPath("data.email").type(JsonFieldType.STRING).description("회원 이메일"),
-                    fieldWithPath("data.nickname").type(JsonFieldType.STRING).description("회원 닉네임"),
-                    fieldWithPath("message").type(JsonFieldType.STRING).optional().description("결과 메시지")
+                responseFields(resFields),
+                resource(ResourceSnippetParameters.builder()
+                    .tag("Auth")
+                    .summary("내 정보 조회")
+                    .responseFields(resFields)
+                    .build()
                 )
             ));
     }
@@ -119,6 +150,16 @@ class AuthControllerTest {
 
         RefreshTokenRequest req = new RefreshTokenRequest(refreshToken);
 
+        FieldDescriptor[] reqFields = {
+            fieldWithPath("refreshToken").type(JsonFieldType.STRING).description("리프레시 토큰")
+        };
+        FieldDescriptor[] resFields = {
+            fieldWithPath("success").type(JsonFieldType.BOOLEAN).description("성공 여부"),
+            fieldWithPath("data.accessToken").type(JsonFieldType.STRING).description("새 액세스 토큰"),
+            fieldWithPath("data.refreshToken").type(JsonFieldType.STRING).description("새 리프레시 토큰"),
+            fieldWithPath("message").type(JsonFieldType.STRING).optional().description("결과 메시지")
+        };
+
         mockMvc.perform(post("/api/auth/refresh")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(req)))
@@ -126,16 +167,14 @@ class AuthControllerTest {
             .andDo(document("auth-refresh",
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
-                requestFields(
-                    fieldWithPath("refreshToken")
-                        .type(JsonFieldType.STRING)
-                        .description("리프레시 토큰")
-                ),
-                responseFields(
-                    fieldWithPath("success").type(JsonFieldType.BOOLEAN).description("성공 여부"),
-                    fieldWithPath("data.accessToken").type(JsonFieldType.STRING).description("새 액세스 토큰"),
-                    fieldWithPath("data.refreshToken").type(JsonFieldType.STRING).description("새 리프레시 토큰"),
-                    fieldWithPath("message").type(JsonFieldType.STRING).optional().description("결과 메시지")
+                requestFields(reqFields),
+                responseFields(resFields),
+                resource(ResourceSnippetParameters.builder()
+                    .tag("Auth")
+                    .summary("토큰 재발급")
+                    .requestFields(reqFields)
+                    .responseFields(resFields)
+                    .build()
                 )
             ));
     }

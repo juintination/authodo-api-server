@@ -3,6 +3,7 @@ plugins {
     id("org.springframework.boot") version "3.5.7"
     id("io.spring.dependency-management") version "1.1.7"
     id("org.asciidoctor.jvm.convert") version "3.3.2"
+    id("com.epages.restdocs-api-spec") version "0.19.4"
 }
 
 group = "com.example"
@@ -27,6 +28,17 @@ repositories {
 
 val snippetsDir = file("build/generated-snippets")
 val generatedAsciidocDir = layout.buildDirectory.dir("generated-asciidoc")
+
+openapi3 {
+    setServer("http://localhost:8080")
+    title = "Authodo API"
+    description = "Authodo API 문서"
+    version = "1.0.0"
+    format = "yaml"
+    outputFileNamePrefix = "openapi3"
+    outputDirectory = "build/api-spec"
+    snippetsDirectory = "build/generated-snippets"
+}
 
 val snippetIncludes = listOf(
     "http-request",
@@ -69,9 +81,13 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
+    // Swagger UI
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.3")
+
     // Test
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.restdocs:spring-restdocs-mockmvc")
+    testImplementation("com.epages:restdocs-api-spec-mockmvc:0.19.4")
     testImplementation("org.springframework.security:spring-security-test")
     testImplementation("org.springframework.boot:spring-boot-testcontainers")
     testImplementation("org.testcontainers:junit-jupiter")
@@ -84,11 +100,23 @@ tasks.withType<Test> {
     finalizedBy("generateDocsIndex")
 }
 
+afterEvaluate {
+    tasks.named("openapi3") { dependsOn(tasks.test); group = null }
+    tasks.named("openapi") { group = null; enabled = false }
+    tasks.named("postman") { group = null; enabled = false }
+}
+
+val copyOpenApiSpec by tasks.registering(Copy::class) {
+    dependsOn("openapi3")
+    from("build/api-spec/openapi3.yaml")
+    into(layout.buildDirectory.dir("resources/main/static/docs"))
+}
+
 // 문서 전체 생성 진입점 (Gradle 창에서 이 태스크 하나만 실행하면 됨)
 val generateDocs by tasks.registering {
     group = "documentation"
-    description = "테스트 실행 → index.adoc 생성 → HTML 변환 → static/docs 복사"
-    dependsOn("copyRestDocs")
+    description = "테스트 실행 → index.adoc 생성 → HTML 변환 → static/docs 복사 → OpenAPI 스펙 생성"
+    dependsOn("copyRestDocs", "copyOpenApiSpec")
 }
 
 // snippets 디렉터리를 스캔해 index.adoc 자동 생성
@@ -156,17 +184,17 @@ val copyRestDocs by tasks.registering(Copy::class) {
 
 // 빌드 및 실행 시 문서가 포함되도록 보장
 tasks.bootJar {
-    dependsOn(copyRestDocs)
+    dependsOn(copyRestDocs, "copyOpenApiSpec")
     from(tasks.asciidoctor.get().outputDir) {
         into("static/docs")
     }
 }
 
 tasks.bootRun {
-    dependsOn(copyRestDocs)
+    dependsOn(copyRestDocs, "copyOpenApiSpec")
 }
 
-// 전체 build 수행 시 copyRestDocs가 완료되어야 함을 명시
+// 전체 build 수행 시 문서 태스크가 완료되어야 함을 명시
 tasks.build {
-    dependsOn(copyRestDocs)
+    dependsOn(copyRestDocs, "copyOpenApiSpec")
 }
