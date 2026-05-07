@@ -5,7 +5,7 @@ import static org.mockito.BDDMockito.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.verify;
 
-import com.example.authodo.adapter.in.web.common.exception.BusinessException;
+import com.example.authodo.application.common.exception.BusinessException;
 import com.example.authodo.application.todo.dto.command.UpdateTodoCommand;
 import com.example.authodo.domain.todo.Todo;
 import com.example.authodo.domain.todo.enums.TodoStatus;

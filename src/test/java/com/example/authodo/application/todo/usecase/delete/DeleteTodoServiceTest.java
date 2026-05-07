@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.verify;
 
-import com.example.authodo.adapter.in.web.common.exception.BusinessException;
+import com.example.authodo.application.common.exception.BusinessException;
 import com.example.authodo.domain.todo.Todo;
 import com.example.authodo.domain.todo.port.out.TodoRepositoryPort;
 import java.util.Optional;

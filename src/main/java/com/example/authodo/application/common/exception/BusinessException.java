@@ -1,6 +1,6 @@
-package com.example.authodo.adapter.in.web.common.exception;
+package com.example.authodo.application.common.exception;
 
-import com.example.authodo.adapter.in.web.common.error.ErrorCode;
+import com.example.authodo.application.common.error.ErrorCode;
 import lombok.Getter;
 
 @Getter

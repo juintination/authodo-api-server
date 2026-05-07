@@ -1,7 +1,7 @@
 package com.example.authodo.application.todo.usecase.update;
 
-import com.example.authodo.adapter.in.web.common.error.ErrorCode;
-import com.example.authodo.adapter.in.web.common.exception.BusinessException;
+import com.example.authodo.application.common.error.ErrorCode;
+import com.example.authodo.application.common.exception.BusinessException;
 import com.example.authodo.application.todo.dto.command.UpdateTodoCommand;
 import com.example.authodo.domain.todo.Todo;
 import com.example.authodo.domain.todo.port.out.TodoRepositoryPort;

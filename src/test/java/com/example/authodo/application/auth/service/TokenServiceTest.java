@@ -1,13 +1,13 @@
-package com.example.authodo.application.auth;
+package com.example.authodo.application.auth.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.verify;
 
-import com.example.authodo.adapter.in.web.common.error.ErrorCode;
-import com.example.authodo.adapter.in.web.common.exception.BusinessException;
-import com.example.authodo.adapter.in.web.security.jwt.JwtTokenProvider;
+import com.example.authodo.application.auth.port.out.TokenProviderPort;
+import com.example.authodo.application.common.error.ErrorCode;
+import com.example.authodo.application.common.exception.BusinessException;
 import com.example.authodo.application.auth.dto.result.TokenResult;
 import com.example.authodo.domain.auth.port.out.RefreshTokenRepositoryPort;
 import com.example.authodo.domain.user.enums.UserRole;
@@ -26,7 +26,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class TokenServiceTest {
 
     @Mock
-    private JwtTokenProvider jwtTokenProvider;
+    private TokenProviderPort tokenProvider;
 
     @Mock
     private RefreshTokenRepositoryPort refreshTokenRepository;
@@ -40,9 +40,9 @@ class TokenServiceTest {
         Long userId = 1L;
         Set<UserRole> roles = Set.of(UserRole.USER);
 
-        given(jwtTokenProvider.createAccessToken(userId, List.of("USER"))).willReturn("access-token");
-        given(jwtTokenProvider.createRefreshToken(userId)).willReturn("refresh-token");
-        given(jwtTokenProvider.getRefreshExpirationMs()).willReturn(1000L);
+        given(tokenProvider.createAccessToken(userId, List.of("USER"))).willReturn("access-token");
+        given(tokenProvider.createRefreshToken(userId)).willReturn("refresh-token");
+        given(tokenProvider.getRefreshExpirationMs()).willReturn(1000L);
 
         TokenResult result = tokenService.issue(userId, roles);
 
@@ -62,9 +62,9 @@ class TokenServiceTest {
         String newRefreshToken = "new-refresh-token";
 
         given(refreshTokenRepository.findByUserId(userId)).willReturn(Optional.of(oldToken));
-        given(jwtTokenProvider.createAccessToken(userId, List.of("USER"))).willReturn(newAccessToken);
-        given(jwtTokenProvider.createRefreshToken(userId)).willReturn(newRefreshToken);
-        given(jwtTokenProvider.getRefreshExpirationMs()).willReturn(2000L);
+        given(tokenProvider.createAccessToken(userId, List.of("USER"))).willReturn(newAccessToken);
+        given(tokenProvider.createRefreshToken(userId)).willReturn(newRefreshToken);
+        given(tokenProvider.getRefreshExpirationMs()).willReturn(2000L);
 
         TokenResult result = tokenService.refresh(userId, roles, oldToken);
 
@@ -110,7 +110,7 @@ class TokenServiceTest {
         String refreshToken = "refresh-token";
         Long userId = 1L;
 
-        given(jwtTokenProvider.getUserId(refreshToken)).willReturn(userId);
+        given(tokenProvider.getUserId(refreshToken)).willReturn(userId);
 
         Long result = tokenService.extractUserIdFromRefreshToken(refreshToken);
 

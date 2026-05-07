@@ -1,9 +1,9 @@
-package com.example.authodo.application.auth;
+package com.example.authodo.application.auth.service;
 
-import com.example.authodo.adapter.in.web.common.error.ErrorCode;
-import com.example.authodo.adapter.in.web.common.exception.BusinessException;
-import com.example.authodo.adapter.in.web.security.jwt.JwtTokenProvider;
 import com.example.authodo.application.auth.dto.result.TokenResult;
+import com.example.authodo.application.auth.port.out.TokenProviderPort;
+import com.example.authodo.application.common.error.ErrorCode;
+import com.example.authodo.application.common.exception.BusinessException;
 import com.example.authodo.domain.auth.port.out.RefreshTokenRepositoryPort;
 import com.example.authodo.domain.user.enums.UserRole;
 import java.util.List;
@@ -15,15 +15,15 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class TokenService {
 
-    private final JwtTokenProvider jwtTokenProvider;
+    private final TokenProviderPort tokenProvider;
     private final RefreshTokenRepositoryPort refreshTokenRepositoryPort;
 
     public TokenResult issue(Long userId, Set<UserRole> roles) {
         List<String> rolesStr = roles.stream().map(UserRole::name).toList();
-        String accessToken = jwtTokenProvider.createAccessToken(userId, rolesStr);
-        String refreshToken = jwtTokenProvider.createRefreshToken(userId);
+        String accessToken = tokenProvider.createAccessToken(userId, rolesStr);
+        String refreshToken = tokenProvider.createRefreshToken(userId);
 
-        long ttl = jwtTokenProvider.getRefreshExpirationMs();
+        long ttl = tokenProvider.getRefreshExpirationMs();
 
         refreshTokenRepositoryPort.save(userId, refreshToken, ttl);
 
@@ -31,7 +31,7 @@ public class TokenService {
     }
 
     public Long extractUserIdFromRefreshToken(String refreshToken) {
-        return jwtTokenProvider.getUserId(refreshToken);
+        return tokenProvider.getUserId(refreshToken);
     }
 
     public TokenResult refresh(Long userId, Set<UserRole> roles, String refreshToken) {

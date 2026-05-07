@@ -8,7 +8,10 @@ import com.example.authodo.adapter.in.web.auth.dto.AuthDtos.UserInfoResponse;
 import com.example.authodo.adapter.in.web.common.response.ApiResponse;
 import com.example.authodo.adapter.in.web.security.util.SecurityUtil;
 import com.example.authodo.application.auth.dto.result.TokenResult;
-import com.example.authodo.domain.auth.port.in.AuthUseCasePort;
+import com.example.authodo.application.auth.usecase.get.GetUserUseCase;
+import com.example.authodo.application.auth.usecase.login.LoginUseCase;
+import com.example.authodo.application.auth.usecase.refresh.RefreshTokenUseCase;
+import com.example.authodo.application.auth.usecase.signup.SignupUseCase;
 import com.example.authodo.domain.user.User;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,14 +26,17 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    private final AuthUseCasePort authUseCasePort;
+    private final SignupUseCase signupUseCase;
+    private final LoginUseCase loginUseCase;
+    private final RefreshTokenUseCase refreshTokenUseCase;
+    private final GetUserUseCase getUserUseCase;
     private final SecurityUtil securityUtil;
 
     @PostMapping("/signup")
     public ApiResponse<TokenResponse> signup(
         @Valid @RequestBody SignupRequest request
     ) {
-        TokenResult result = authUseCasePort.signup(request.toCommand());
+        TokenResult result = signupUseCase.signup(request.toCommand());
 
         return ApiResponse.success(TokenResponse.from(result));
     }
@@ -39,14 +45,14 @@ public class AuthController {
     public ApiResponse<TokenResponse> login(
         @Valid @RequestBody LoginRequest request
     ) {
-        TokenResult result = authUseCasePort.login(request.toCommand());
+        TokenResult result = loginUseCase.login(request.toCommand());
 
         return ApiResponse.success(TokenResponse.from(result));
     }
 
     @GetMapping("/me")
     public ApiResponse<UserInfoResponse> getMyInfo() {
-        User user = authUseCasePort.getById(securityUtil.getCurrentUserId());
+        User user = getUserUseCase.getById(securityUtil.getCurrentUserId());
 
         return ApiResponse.success(UserInfoResponse.from(user));
     }
@@ -55,7 +61,7 @@ public class AuthController {
     public ApiResponse<TokenResponse> refresh(
         @RequestBody RefreshTokenRequest request
     ) {
-        TokenResult result = authUseCasePort.refresh(request.toCommand());
+        TokenResult result = refreshTokenUseCase.refresh(request.toCommand());
 
         return ApiResponse.success(TokenResponse.from(result));
     }

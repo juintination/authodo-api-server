@@ -1,7 +1,8 @@
 package com.example.authodo.adapter.in.web.security.jwt;
 
-import com.example.authodo.adapter.in.web.common.error.ErrorCode;
 import com.example.authodo.adapter.in.web.security.exception.JwtAuthenticationException;
+import com.example.authodo.application.auth.port.out.TokenProviderPort;
+import com.example.authodo.application.common.error.ErrorCode;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtBuilder;
@@ -23,7 +24,7 @@ import org.springframework.stereotype.Component;
 
 @Log4j2
 @Component
-public class JwtTokenProvider {
+public class JwtTokenProvider implements TokenProviderPort {
 
     private final SecretKey key;
     private final long accessExpirationMs;
