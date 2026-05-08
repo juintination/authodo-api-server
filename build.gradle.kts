@@ -2,7 +2,6 @@ plugins {
     java
     id("org.springframework.boot") version "3.5.7"
     id("io.spring.dependency-management") version "1.1.7"
-    id("org.asciidoctor.jvm.convert") version "3.3.2"
     id("com.epages.restdocs-api-spec") version "0.19.4"
 }
 
@@ -27,7 +26,6 @@ repositories {
 }
 
 val snippetsDir = file("build/generated-snippets")
-val generatedAsciidocDir = layout.buildDirectory.dir("generated-asciidoc")
 
 openapi3 {
     setServer("http://localhost:8080")
@@ -39,15 +37,6 @@ openapi3 {
     outputDirectory = "build/api-spec"
     snippetsDirectory = "build/generated-snippets"
 }
-
-val snippetIncludes = listOf(
-    "http-request",
-    "request-fields",
-    "path-parameters",
-    "query-parameters",
-    "http-response",
-    "response-fields"
-)
 
 dependencies {
     // Web & Validation
@@ -97,7 +86,6 @@ dependencies {
 tasks.withType<Test> {
     useJUnitPlatform()
     outputs.dir(snippetsDir)
-    finalizedBy("generateDocsIndex")
 }
 
 afterEvaluate {
@@ -106,95 +94,29 @@ afterEvaluate {
     tasks.named("postman") { group = null; enabled = false }
 }
 
+// 생성된 openapi3.yaml을 static/docs 아래 배치해 Swagger UI가 읽을 수 있도록 복사
 val copyOpenApiSpec by tasks.registering(Copy::class) {
     dependsOn("openapi3")
     from("build/api-spec/openapi3.yaml")
     into(layout.buildDirectory.dir("resources/main/static/docs"))
 }
 
-// 문서 전체 생성 진입점 (Gradle 창에서 이 태스크 하나만 실행하면 됨)
+// 문서 생성 진입점: test → openapi3 → copyOpenApiSpec
 val generateDocs by tasks.registering {
     group = "documentation"
-    description = "테스트 실행 → index.adoc 생성 → HTML 변환 → static/docs 복사 → OpenAPI 스펙 생성"
-    dependsOn("copyRestDocs", "copyOpenApiSpec")
+    description = "테스트 실행 → OpenAPI 3.0 YAML 생성 → static/docs 복사"
+    dependsOn("copyOpenApiSpec")
 }
 
-// snippets 디렉터리를 스캔해 index.adoc 자동 생성
-val generateDocsIndex by tasks.registering {
-    dependsOn(tasks.test)
-    outputs.dir(generatedAsciidocDir)
-    finalizedBy(tasks.asciidoctor)
-
-    doLast {
-        val outputDir = generatedAsciidocDir.get().asFile
-        outputDir.mkdirs()
-
-        val groups = (snippetsDir.listFiles() ?: emptyArray())
-            .filter { it.isDirectory }
-            .groupBy { it.name.substringBefore("-") }
-            .toSortedMap()
-
-        val content = buildString {
-            appendLine("= Authodo API 문서")
-            appendLine(":toc: left")
-            appendLine(":toclevels: 2")
-            appendLine(":sectnums:")
-            appendLine()
-
-            groups.forEach { (prefix, dirs) ->
-                appendLine("== ${prefix.replaceFirstChar { it.uppercase() }} API")
-                appendLine()
-
-                dirs.sortedBy { it.name }.forEach { dir ->
-                    appendLine("---")
-                    appendLine()
-                    appendLine("=== ${dir.name}")
-                    appendLine()
-
-                    snippetIncludes
-                        .filter { dir.resolve("$it.adoc").exists() }
-                        .forEach { snippet ->
-                            appendLine("include::{snippets}/${dir.name}/$snippet.adoc[]")
-                        }
-                    appendLine()
-                }
-            }
-        }
-
-        File(outputDir, "index.adoc").writeText(content)
-    }
-}
-
-// Asciidoctor HTML 생성
-tasks.asciidoctor {
-    dependsOn(generateDocsIndex)
-    sourceDir(generatedAsciidocDir.get().asFile)
-    inputs.dir(snippetsDir)
-    attributes(mapOf("snippets" to snippetsDir))
-    baseDirFollowsSourceDir()
-    finalizedBy("copyRestDocs")
-}
-
-// 생성된 HTML을 정적 리소스 위치로 복사
-val copyRestDocs by tasks.registering(Copy::class) {
-    dependsOn(tasks.asciidoctor)
-    from(tasks.asciidoctor.get().outputDir)
-    into(layout.buildDirectory.dir("resources/main/static/docs"))
-}
-
-// 빌드 및 실행 시 문서가 포함되도록 보장
+// bootJar / bootRun / build 수행 시 Swagger UI 문서가 자동으로 포함되도록 보장
 tasks.bootJar {
-    dependsOn(copyRestDocs, "copyOpenApiSpec")
-    from(tasks.asciidoctor.get().outputDir) {
-        into("static/docs")
-    }
+    dependsOn("copyOpenApiSpec")
 }
 
 tasks.bootRun {
-    dependsOn(copyRestDocs, "copyOpenApiSpec")
+    dependsOn("copyOpenApiSpec")
 }
 
-// 전체 build 수행 시 문서 태스크가 완료되어야 함을 명시
 tasks.build {
-    dependsOn(copyRestDocs, "copyOpenApiSpec")
+    dependsOn("copyOpenApiSpec")
 }
