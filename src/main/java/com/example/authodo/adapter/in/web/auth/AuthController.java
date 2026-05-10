@@ -6,7 +6,7 @@ import com.example.authodo.adapter.in.web.auth.dto.AuthDtos.SignupRequest;
 import com.example.authodo.adapter.in.web.auth.dto.AuthDtos.TokenResponse;
 import com.example.authodo.adapter.in.web.auth.dto.AuthDtos.UserInfoResponse;
 import com.example.authodo.adapter.in.web.common.response.ApiResponse;
-import com.example.authodo.adapter.in.web.security.util.SecurityUtil;
+import com.example.authodo.adapter.in.web.security.annotation.AuthenticatedUserId;
 import com.example.authodo.application.auth.dto.result.TokenResult;
 import com.example.authodo.application.auth.usecase.get.GetUserUseCase;
 import com.example.authodo.application.auth.usecase.login.LoginUseCase;
@@ -30,7 +30,6 @@ public class AuthController {
     private final LoginUseCase loginUseCase;
     private final RefreshTokenUseCase refreshTokenUseCase;
     private final GetUserUseCase getUserUseCase;
-    private final SecurityUtil securityUtil;
 
     @PostMapping("/signup")
     public ApiResponse<TokenResponse> signup(
@@ -51,8 +50,10 @@ public class AuthController {
     }
 
     @GetMapping("/me")
-    public ApiResponse<UserInfoResponse> getMyInfo() {
-        User user = getUserUseCase.getById(securityUtil.getCurrentUserId());
+    public ApiResponse<UserInfoResponse> getMyInfo(
+        @AuthenticatedUserId Long userId
+    ) {
+        User user = getUserUseCase.getById(userId);
 
         return ApiResponse.success(UserInfoResponse.from(user));
     }

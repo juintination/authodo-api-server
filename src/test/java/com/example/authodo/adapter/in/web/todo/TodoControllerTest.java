@@ -15,7 +15,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.epages.restdocs.apispec.ResourceDocumentation;
 import com.epages.restdocs.apispec.ResourceSnippetParameters;
-import com.example.authodo.adapter.in.web.security.util.SecurityUtil;
 import com.example.authodo.adapter.in.web.todo.dto.TodoDtos.TodoCreateRequest;
 import com.example.authodo.adapter.in.web.todo.dto.TodoDtos.TodoUpdateRequest;
 import com.example.authodo.application.todo.dto.command.CreateTodoCommand;
@@ -30,6 +29,7 @@ import org.springframework.http.MediaType;
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
 import org.springframework.restdocs.payload.FieldDescriptor;
 import org.springframework.restdocs.payload.JsonFieldType;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -46,9 +46,6 @@ class TodoControllerTest {
 
     @Autowired
     CreateTodoUseCase createTodoUseCase;
-
-    @Autowired
-    SecurityUtil securityUtil;
 
     @Test
     @DisplayName("POST /api/todos - 생성")
@@ -169,7 +166,8 @@ class TodoControllerTest {
                     .queryParameters(
                         ResourceDocumentation.parameterWithName("page").description("페이지 번호"),
                         ResourceDocumentation.parameterWithName("size").description("페이지 크기"),
-                        ResourceDocumentation.parameterWithName("status").optional().description("상태 필터 (PENDING / IN_PROGRESS / COMPLETED)")
+                        ResourceDocumentation.parameterWithName("status").optional()
+                            .description("상태 필터 (PENDING / IN_PROGRESS / COMPLETED)")
                     )
                     .responseFields(resFields)
                     .build()
@@ -253,6 +251,7 @@ class TodoControllerTest {
     }
 
     private Long createTodoAndReturnId() {
-        return createTodoUseCase.create(securityUtil.getCurrentUserId(), new CreateTodoCommand("제목", "내용")).getId();
+        Long userId = Long.valueOf(SecurityContextHolder.getContext().getAuthentication().getName());
+        return createTodoUseCase.create(userId, new CreateTodoCommand("제목", "내용")).getId();
     }
 }

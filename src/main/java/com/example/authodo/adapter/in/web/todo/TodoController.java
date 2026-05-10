@@ -2,7 +2,7 @@ package com.example.authodo.adapter.in.web.todo;
 
 import com.example.authodo.adapter.in.web.common.response.ApiResponse;
 import com.example.authodo.adapter.in.web.common.response.PageResponse;
-import com.example.authodo.adapter.in.web.security.util.SecurityUtil;
+import com.example.authodo.adapter.in.web.security.annotation.AuthenticatedUserId;
 import com.example.authodo.adapter.in.web.todo.dto.TodoDtos.GetTodosRequest;
 import com.example.authodo.adapter.in.web.todo.dto.TodoDtos.TodoCreateRequest;
 import com.example.authodo.adapter.in.web.todo.dto.TodoDtos.TodoResponse;
@@ -36,31 +36,33 @@ public class TodoController {
     private final GetTodosUseCase getTodosUseCase;
     private final UpdateTodoUseCase updateTodoUseCase;
     private final DeleteTodoUseCase deleteTodoUseCase;
-    private final SecurityUtil securityUtil;
 
     @PostMapping
     public ApiResponse<Long> create(
+        @AuthenticatedUserId Long userId,
         @Valid @RequestBody TodoCreateRequest request
     ) {
-        Long result = createTodoUseCase.create(securityUtil.getCurrentUserId(), request.toCommand()).getId();
+        Long result = createTodoUseCase.create(userId, request.toCommand()).getId();
 
         return ApiResponse.success(result);
     }
 
     @GetMapping("/{todoId}")
     public ApiResponse<TodoResponse> get(
+        @AuthenticatedUserId Long userId,
         @PathVariable Long todoId
     ) {
-        Todo result = getTodoUseCase.get(securityUtil.getCurrentUserId(), todoId);
+        Todo result = getTodoUseCase.get(userId, todoId);
 
         return ApiResponse.success(TodoResponse.from(result));
     }
 
     @GetMapping
     public ApiResponse<PageResponse<TodoResponse>> getTodos(
+        @AuthenticatedUserId Long userId,
         @Valid GetTodosRequest request
     ) {
-        PageResult<Todo> result = getTodosUseCase.getTodos(securityUtil.getCurrentUserId(), request.toQuery());
+        PageResult<Todo> result = getTodosUseCase.getTodos(userId, request.toQuery());
 
         List<TodoResponse> items = result.items().stream()
             .map(TodoResponse::from)
@@ -78,19 +80,21 @@ public class TodoController {
 
     @PutMapping("/{todoId}")
     public ApiResponse<Void> update(
+        @AuthenticatedUserId Long userId,
         @PathVariable Long todoId,
         @Valid @RequestBody TodoUpdateRequest request
     ) {
-        updateTodoUseCase.update(securityUtil.getCurrentUserId(), todoId, request.toCommand());
+        updateTodoUseCase.update(userId, todoId, request.toCommand());
 
         return ApiResponse.success(null);
     }
 
     @DeleteMapping("/{todoId}")
     public ApiResponse<Void> delete(
+        @AuthenticatedUserId Long userId,
         @PathVariable Long todoId
     ) {
-        deleteTodoUseCase.delete(securityUtil.getCurrentUserId(), todoId);
+        deleteTodoUseCase.delete(userId, todoId);
 
         return ApiResponse.success(null);
     }
